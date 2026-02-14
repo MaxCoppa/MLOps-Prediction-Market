@@ -101,11 +101,11 @@ class KalshiAnalyzer(KalshiClient):
         self,
         start_ts: str = "2025-09-23",
         end_ts: str = "2026-02-15",
-        freq: int = 1440,
         plot: bool = True,
     ) -> pd.Series:
         start = self._convert_ts(start_ts)
         end = self._convert_ts(end_ts)
+        freq = 1440  # Change to 1, 60, 1440 but .normalize careful
 
         data = self._get(
             f"/series/{self.series_ticker}/markets/{self.market_ticker}/candlesticks",
@@ -126,3 +126,47 @@ class KalshiAnalyzer(KalshiClient):
             prices.plot()
 
         return prices.sort_index()
+
+    def get_trades_data(
+        self,
+        start_ts: str = "2025-09-23",
+        end_ts: str = "2026-02-15",
+        plot: bool = True,
+    ):
+
+        start = self._convert_ts(start_ts)
+        end = self._convert_ts(end_ts)
+        path = "/markets/trades"
+        cursor = ""
+        trades = []
+        n = 1
+
+        while n != 0:
+            params = {
+                "ticker": self.market_ticker,
+                "min_ts": start,
+                "max_ts": end,
+                "limit": 1000,
+                "cursor": cursor,
+            }
+
+            trades_data = self._get(path=path, params=params)
+            cursor = trades_data["cursor"]
+            n = len(cursor)
+            trades = trades + trades_data["trades"]
+        trades_data = pd.DataFrame(trades)
+        trades_data["trade_day"] = pd.to_datetime(
+            trades_data["created_time"]
+        ).dt.normalize()
+        volumes = (
+            trades_data.groupby(["trade_day", "taker_side"])["count"].sum().unstack()
+        )
+
+        self.trades_data = trades_data
+        self.volumes = volumes
+
+        if plot:
+            volumes["yes"].plot()
+            volumes["no"].plot()
+
+        return volumes
