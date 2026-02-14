@@ -1,10 +1,11 @@
 # %%
 import requests
 import pandas as pd
+import numpy as np
 from datetime import datetime, timezone
 import time
 import pandas as pd
-from market_data import KalshiClient, KalshiAnalyzer
+from market_data import KalshiClient, KalshiAnalyzer, KalshiFeatureEngineer
 
 from market_data.utils import convert_ts, request_api
 
@@ -17,60 +18,63 @@ market_ticker = "KXOSCARPIC-26-HAM"
 path = f"/markets/{market_ticker}/orderbook"
 start_ts = "2025-09-23"
 end_ts = "2026-02-15"
-# %%
-client = KalshiClient(series_ticker=series_ticker)
-series_data = client.get_series_information()
-markets_data = client.get_markets_data()
+
 # %%
 analyzer = KalshiAnalyzer(series_ticker=series_ticker, market_ticker=market_ticker)
-orderbook_data = analyzer.get_orderbook_data()
 prices = analyzer.get_price_data(
     start_ts=start_ts,
     end_ts=end_ts,
     plot=False,
+)  # Here Yes Price
+
+volumes = analyzer.get_trades_data(
+    start_ts=start_ts,
+    end_ts=end_ts,
+    plot=False,
+)
+# %%
+volumes["prices"] = prices
+# %%
+ret = prices.pct_change()
+volumes["RET"] = ret.reindex(volumes.index)
+
+volumes["VOLUME"] = volumes["yes"]
+X = volumes[["RET", "VOLUME"]].copy()
+
+X.reset_index(
+    inplace=True,
+    drop=True,
+)
+X.reset_index(inplace=True, names="TS")
+X["TS"] = X["TS"] + np.random.randint(1e5)
+
+# %%
+for i in range(1, 11):
+    X[f"RET_{i}"] = X["RET"].shift(i)
+    X[f"VOLUME_{i}"] = X["VOLUME"].shift(i)
+# %%
+X = X[11:].reset_index(drop=True)
+# %%
+y = X["RET"] > 0
+X.drop(columns=["RET", "VOLUME"])
+
+# %%
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+
+model = Pipeline(
+    [("scaler", StandardScaler()), ("clf", LogisticRegression(max_iter=2000))]
 )
 
 # %%
-start = convert_ts(start_ts)
-end = convert_ts(end_ts)
-path = "/markets/trades"
-cursor = ""
-trades = []
-n = 1
-
-while n != 0:
-    params = {
-        "ticker": market_ticker,
-        "min_ts": start,
-        "max_ts": end,
-        "limit": 1000,
-        "cursor": cursor,
-    }
-
-    trades_data = request_api(session=analyzer.session, path=path, params=params)
-    cursor = trades_data["cursor"]
-    n = len(cursor)
-    trades = trades + trades_data["trades"]
+X_train, X_val, y_train, y_val = train_test_split(X, y, train_size=0.8, shuffle=False)
 # %%
-trades_data = pd.DataFrame(trades)
-trades_data
-# %%
-trades_data["trade_day"] = pd.to_datetime(trades_data["created_time"]).dt.normalize()
 
+model.fit(X_train, y_train)
 # %%
-trades_data.groupby(["trade_day", "taker_side"])["trade_value"].sum().unstack()[
-    "yes"
-].plot()
-trades_data.groupby(["trade_day", "taker_side"])["trade_value"].sum().unstack()[
-    "no"
-].plot()
+print("Train acc:", model.score(X_train, y_train))
+print("Val acc:", model.score(X_val, y_val))
 
-# %%
-mask = trades_data["taker_side"] == "yes"
-trades_data.loc[mask, "trade_value"] = (
-    trades_data.loc[mask, "count"] * trades_data.loc[mask, "yes_price"]
-)
-trades_data.loc[~mask, "trade_value"] = (
-    trades_data.loc[~mask, "count"] * trades_data.loc[~mask, "no_price"]
-)
 # %%
