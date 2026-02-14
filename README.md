@@ -1,4 +1,3 @@
-```md
 # MLOps-Prediction-Market
 
 Train and evaluate a machine learning pipeline to predict **Kalshi** prediction-market price movements using the **Kalshi Elections Trade API v2**.
