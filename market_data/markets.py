@@ -125,7 +125,7 @@ class KalshiAnalyzer(KalshiClient):
         if plot:
             prices.plot()
 
-        return prices.sort_index()
+        return prices.sort_index().ffill()
 
     def get_trades_data(
         self,
@@ -158,9 +158,21 @@ class KalshiAnalyzer(KalshiClient):
         trades_data["trade_day"] = pd.to_datetime(
             trades_data["created_time"]
         ).dt.normalize()
-        volumes = (
-            trades_data.groupby(["trade_day", "taker_side"])["count"].sum().unstack()
+
+        mask = trades_data["taker_side"] == "yes"
+        trades_data.loc[mask, "trade_value"] = (
+            trades_data.loc[mask, "count"] * trades_data.loc[mask, "yes_price"]
         )
+        trades_data.loc[~mask, "trade_value"] = (
+            trades_data.loc[~mask, "count"] * trades_data.loc[~mask, "no_price"]
+        )
+
+        volumes = (
+            trades_data.groupby(["trade_day", "taker_side"])["trade_value"]
+            .sum()
+            .unstack()
+        ).fillna(0.0)
+        volumes = volumes.rename_axis(columns=None)
 
         self.trades_data = trades_data
         self.volumes = volumes
