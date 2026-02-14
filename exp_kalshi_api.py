@@ -8,6 +8,8 @@ import time
 # %% Step 1: Get Series Information
 
 series_ticker = "KXHIGHNY"
+series_ticker = "KXUCLGAME"
+series_ticker = "kxoscarpic".upper()
 # Get series information for series_ticker
 url = f"https://api.elections.kalshi.com/trade-api/v2/series/{series_ticker}"
 response = requests.get(url)
@@ -16,7 +18,8 @@ series_data = response.json()
 print(f"Series Title: {series_data['series']['title']}")
 print(f"Frequency: {series_data['series']['frequency']}")
 print(f"Category: {series_data['series']['category']}")
-
+# %%
+series_ticker
 # %% Step 2: Get Today’s Events and Markets
 # Get all open markets for the series_ticker series
 markets_url = f"https://api.elections.kalshi.com/trade-api/v2/markets?series_ticker={series_ticker}&status=open"
@@ -55,7 +58,7 @@ if not markets_data["markets"]:
         "No open markets found. Try removing status=open or choose another series."
     )
 
-market_ticker = markets_data["markets"][0]["ticker"]
+market_ticker = markets_data["markets"][-1]["ticker"]
 orderbook_url = (
     f"https://api.elections.kalshi.com/trade-api/v2/markets/{market_ticker}/orderbook"
 )
@@ -73,30 +76,58 @@ for bid in orderbook_data["orderbook"]["no"][:5]:  # Show top 5
     print(f"  Price: {bid[0]}¢, Quantity: {bid[1]}")
 # %%
 
+
 ticker = market_ticker
-# %%
-today_midnight = datetime.now(timezone.utc).replace(
-    hour=0, minute=0, second=0, microsecond=0
-)
-
-start_ts = int(today_midnight.timestamp())
-now_ts = int(time.time())
-
-# %%
-candlesticks_url = f"https://api.elections.kalshi.com/trade-api/v2/series/{series_ticker}/markets/{ticker}/candlesticks?start_ts=1770854400&end_ts=1770914728&period_interval=1&include_latest_before_start=true"
-price_data = requests.get(candlesticks_url).json()["candlesticks"]
+market_ticker, series_ticker
 
 # %%
 
-dict_price = [
-    {"ts": data_ts["end_period_ts"]} | data_ts["yes_ask"] for data_ts in price_data
+
+def convert_ts(datetime_ts):
+    dt = datetime.strptime(datetime_ts, "%Y-%m-%d")
+    return int(dt.replace(tzinfo=timezone.utc).timestamp())
+
+
+# %%
+start_ts = convert_ts("2025-09-23")
+end_ts = start_ts + 86400 * 30
+end_ts = convert_ts("2026-02-15")
+freq = 1440  # 1, 60, 1440
+# %%
+candlesticks_url = f"https://api.elections.kalshi.com/trade-api/v2/series/{series_ticker}/markets/{ticker}/candlesticks?start_ts={start_ts}&end_ts={end_ts}&period_interval={freq}"
+historic_price = requests.get(candlesticks_url).json()["candlesticks"]
+
+
+# %%
+historic_price_dict = [
+    {"ts": data_ts["end_period_ts"]} | data_ts["price"] for data_ts in historic_price
 ]
 
-df_price = pd.DataFrame.from_dict(dict_price)
-df_price["ts"] = pd.to_datetime(
-    df_price["ts"],
+historic_price_df = pd.DataFrame.from_dict(historic_price_dict)
+historic_price_df["ts"] = pd.to_datetime(
+    historic_price_df["ts"],
     unit="s",
+    utc=True,
 )
 
-df_price.set_index("ts")["high_dollars"].astype(float).plot()
+historic_price_df.set_index("ts")["mean_dollars"].astype(float).plot()
+# %%
+historic_price_df
+
+
+# %%
+prices = historic_price_df.set_index("ts")["mean_dollars"].astype(float) * 100
+prices.index = prices.index.normalize()
+prices.plot()
+# %%
+ref_prices = pd.read_csv(
+    "/Users/maximecoppa/Desktop/Projects/MLOps-Prediction-Market/kalshi-price-history-kxoscarpic-26-day.csv"
+)
+ref_prices["timestamp"] = pd.to_datetime(ref_prices["timestamp"].str[:10], utc=True)
+ref_prices = ref_prices.set_index("timestamp")["Hamnet"]
+# %%
+diff_prices = prices - ref_prices
+# %%
+
+diff_prices.isna().mean(), (diff_prices.abs() > 1e-1).mean()
 # %%
