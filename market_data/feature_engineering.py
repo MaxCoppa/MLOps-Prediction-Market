@@ -3,6 +3,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from datetime import datetime, timedelta
 
 
 class KalshiFeatureEngineer(KalshiAnalyzer):
@@ -15,41 +16,40 @@ class KalshiFeatureEngineer(KalshiAnalyzer):
 
     def build_features(
         self,
-        start_ts: str = "2025-09-23",
-        end_ts: str = "2026-02-15",
+        window_size: int = 100,
+        start_ts: str = None,
+        end_ts: str = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
+        if end_ts is None:
+            end_ts = datetime.now().strftime("%Y-%m-%d")
+        if start_ts is None:
+            start_ts = (datetime.now() - timedelta(days=window_size)).strftime("%Y-%m-%d")
 
-        prices = self.get_price_data(start_ts=start_ts, end_ts=end_ts, plot=False)
-        volumes = self.get_trades_data(start_ts=start_ts, end_ts=end_ts, plot=False)
-        shift = 10
-        ret = prices.pct_change()
-        volumes["RET"] = ret.reindex(volumes.index)
-        volumes["VOLUME"] = volumes["yes"]
+        # 2. Get synchronized data
+        # Assumes get_synchronized_data is updated to accept start/end strings
+        df = self.get_price_volume_data(days=window_size)
+        
+        if df.empty:
+            return pd.DataFrame(), pd.Series()
+        
+        try:
+            shift = 10
+            df["RET"] = (df["price"]-df["price"].shift())/df["price"].shift().replace(0,np.nan)
+            df["VOLUME_TOTAL"] = df["vol_total"]
+            df["VOLUME_YES"] = df["vol_yes"]
+            df["VOLUME_NO"] = df["vol_no"]
 
-        X = volumes[["RET", "VOLUME"]].copy()
-        X.reset_index(
-            inplace=True,
-            drop=True,
-        )
-        X.reset_index(inplace=True, names="TS")
-        X["TS"] = X["TS"] + np.random.randint(1e5)
-
-        for i in range(1, shift + 1):
-            X[f"RET_{i}"] = X["RET"].shift(i)
-            X[f"VOLUME_{i}"] = X["VOLUME"].shift(i)
-
-        X = X[shift + 1 :].reset_index(drop=True)
-        y = X["RET"]
-        X = X.drop(columns=["RET", "VOLUME"])
-
-        self.X = X
-        self.y = y
-
+            X = df[["RET", "VOLUME_TOTAL", "VOLUME_YES", "VOLUME_NO"]].copy()
+            
+            # Lagging
+            for i in range(1, shift + 1):
+                X[f"RET_{i}"] = X["RET"].shift(i)
+                X[f"VOLUME_TOTAL_{i}"] = X["VOLUME_TOTAL"].shift(i)
+                X[f"VOLUME_YES_{i}"] = X["VOLUME_YES"].shift(i)
+                X[f"VOLUME_NO_{i}"] = X["VOLUME_NO"].shift(i)
+            
+            y = X["RET"]
+            X = X.drop(columns=["RET", "VOLUME_TOTAL"])
+        except:
+            return pd.DataFrame(), pd.Series()
         return X, y
-
-    def split_data(self, train_size: float = 0.8):
-        X_train, X_val, y_train, y_val = train_test_split(
-            self.X, self.y, train_size=train_size, shuffle=False
-        )
-
-        return X_train, X_val, y_train, y_val

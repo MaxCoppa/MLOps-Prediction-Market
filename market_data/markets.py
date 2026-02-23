@@ -102,11 +102,11 @@ class KalshiAnalyzer(KalshiClient):
         self,
         start_ts: str = None,
         end_ts: str = None,
-        plot: bool = True,
+        window_size: int = 30
     ) -> pd.Series:
         # Default dates handling
         end_ts = end_ts or datetime.now().strftime("%Y-%m-%d")
-        start_ts = start_ts or (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_ts = start_ts or (datetime.now() - timedelta(days=window_size)).strftime("%Y-%m-%d")
         
         start = self._convert_ts(start_ts)
         end = self._convert_ts(end_ts)
@@ -128,71 +128,76 @@ class KalshiAnalyzer(KalshiClient):
         if df.empty or "mean_dollars" not in df.columns:
             return pd.Series(name="mean_dollars", dtype=float)
 
-        df["ts"] = pd.to_datetime(df["ts"], unit="s", utc=True).dt.normalize()
+        df["ts"] = pd.to_datetime(df["ts"], unit="s", utc=True)
         prices = df.set_index("ts")["mean_dollars"].astype(float) * 100.0
-
-        if plot and not prices.empty:
-            prices.ffill().plot(title=f"Prices for {self.market_ticker}")
 
         return prices.sort_index().ffill()
     
-    def get_trades_data(
+
+    def get_price_volume_data(
         self,
         start_ts: str = None,
         end_ts: str = None,
-        plot: bool = True,
-    ):
+        window_size: int = 30
+        ) -> pd.DataFrame:
+        """
+        Fetch and align prices and volumes into a single synchronized DataFrame.
+        """
         end_ts = end_ts or datetime.now().strftime("%Y-%m-%d")
-        start_ts = start_ts or (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_ts = start_ts or (datetime.now() - timedelta(days=window_size)).strftime("%Y-%m-%d")
+        prices = self.get_price_data(start_ts=start_ts, end_ts=end_ts)
+        
+        if prices.empty:
+            return pd.DataFrame()
 
-        start = self._convert_ts(start_ts)
-        end = self._convert_ts(end_ts)
+        start_unix = int(prices.index.min().timestamp())
+        end_unix = int(prices.index.max().timestamp() + 86400) # +1 day buffer
+        
         path = "/markets/trades"
-        cursor = ""
-        trades = []
+        cursor, all_trades = "", []
         
         while True:
-            params = {"ticker": self.market_ticker, "min_ts": start, "max_ts": end, "limit": 1000}
+            params = {"ticker": self.market_ticker, "min_ts": start_unix, "max_ts": end_unix, "limit": 1000}
             if cursor: params["cursor"] = cursor
+            
+            data = self._get(path=path, params=params)
+            batch = data.get("trades", [])
+            if not batch: break
+            all_trades.extend(batch)
+            cursor = data.get("cursor")
+            if not cursor: break
 
-            trades_data = self._get(path=path, params=params)
-            batch = trades_data.get("trades", [])
-            if not batch:
-                break
-                
-            trades.extend(batch)
-            cursor = trades_data.get("cursor")
-            if not cursor:
-                break
+        if not all_trades:
+            df_final = prices.to_frame(name="price")
+            df_final[["vol_yes", "vol_no"]] = 0.0
+            return df_final
 
-        # Check if trades is empty
-        if not trades:
-            empty_vol = pd.DataFrame(columns=["yes", "no"])
-            self.trades_data, self.volumes = pd.DataFrame(), empty_vol
-            return empty_vol
+        # 3. Process Trades and Synchronize
+        df_t = pd.DataFrame(all_trades)
+        df_t["ts"] = pd.to_datetime(df_t["created_time"], utc=True)
+        
+        # Calculate trade values
+        for s in ["yes", "no"]:
+            if f"{s}_price" not in df_t.columns: df_t[f"{s}_price"] = 0.0
+        
+        mask_yes = df_t["taker_side"] == "yes"
+        df_t["val"] = 0.0
+        df_t.loc[mask_yes, "val"] = df_t["count"] * df_t["yes_price"]
+        df_t.loc[~mask_yes, "val"] = df_t["count"] * df_t["no_price"]
 
-        trades_data = pd.DataFrame(trades)
-        trades_data["trade_day"] = pd.to_datetime(trades_data["created_time"]).dt.normalize()
+        # 4. Rigorous Alignment using price index as bins
+        # Each trade is assigned to the nearest price timestamp
+        pivot = df_t.pivot_table(index="ts", columns="taker_side", values="val", aggfunc="sum")
+        pivot = pivot.reindex(columns=["yes", "no"]).fillna(0.0)
+        
+        # Binning trades into price periods
+        bins = pd.cut(pivot.index, bins=prices.index.tolist() + [prices.index.max() + pd.Timedelta(days=1)], 
+                    labels=prices.index, right=False)
+        volumes = pivot.groupby(bins, observed=False).sum()
 
-        # Vectorized calculation with fallback for missing columns
-        for side in ["yes", "no"]:
-            price_col = f"{side}_price"
-            if price_col not in trades_data.columns:
-                trades_data[price_col] = 0
-
-        mask = trades_data["taker_side"] == "yes"
-        trades_data["trade_value"] = 0.0
-        trades_data.loc[mask, "trade_value"] = trades_data["count"] * trades_data["yes_price"]
-        trades_data.loc[~mask, "trade_value"] = trades_data["count"] * trades_data["no_price"]
-
-        # Pivot with reindex to guarantee 'yes' and 'no' columns even if one side is missing
-        volumes = trades_data.groupby(["trade_day", "taker_side"])["trade_value"].sum().unstack()
-        volumes = volumes.reindex(columns=["yes", "no"]).fillna(0.0)
-        volumes = volumes.rename_axis(columns=None)
-
-        self.trades_data, self.volumes = trades_data, volumes
-
-        if plot and not volumes.empty:
-            volumes.fillna(0).plot(kind='bar', stacked=True, title=f"Volumes for {self.market_ticker}")
-
-        return volumes
+        # 5. Final Merge
+        dataset = pd.concat([prices.to_frame(name="price"), volumes], axis=1).fillna(0.0)
+        dataset.columns = ["price", "vol_yes", "vol_no"]
+        dataset["vol_total"] = dataset["vol_yes"] + dataset["vol_no"]
+        
+        return dataset.sort_index()

@@ -1,0 +1,4 @@
+23/02, trucs à faire pour la prochaine fois :
+- utiliser https://docs.kalshi.com/api-reference/market/batch-get-market-candlesticks
+  pour récupérer prix/volumes en même temps et par batch
+- refactoriser tout bien
