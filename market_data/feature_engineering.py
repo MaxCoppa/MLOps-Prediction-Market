@@ -39,7 +39,7 @@ class KalshiFeatureEngineer(KalshiAnalyzer):
             X[f"VOLUME_{i}"] = X["VOLUME"].shift(i)
 
         X = X[shift + 1 :].reset_index(drop=True)
-        y = X["RET"] > 0
+        y = X["RET"]
         X = X.drop(columns=["RET", "VOLUME"])
 
         self.X = X

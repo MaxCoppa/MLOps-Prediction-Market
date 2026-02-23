@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 API_URL = "https://api.elections.kalshi.com/trade-api/v2"
 
@@ -63,6 +63,7 @@ class KalshiClient:
             print(f"Category: {event_data['event']['category']}")
 
         return markets_data
+    
 
 
 class KalshiAnalyzer(KalshiClient):
@@ -99,13 +100,17 @@ class KalshiAnalyzer(KalshiClient):
 
     def get_price_data(
         self,
-        start_ts: str = "2025-09-23",
-        end_ts: str = "2026-02-15",
+        start_ts: str = None,
+        end_ts: str = None,
         plot: bool = True,
     ) -> pd.Series:
+        # Default dates handling
+        end_ts = end_ts or datetime.now().strftime("%Y-%m-%d")
+        start_ts = start_ts or (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        
         start = self._convert_ts(start_ts)
         end = self._convert_ts(end_ts)
-        freq = 1440  # Change to 1, 60, 1440 but .normalize careful
+        freq = 1440 
 
         data = self._get(
             f"/series/{self.series_ticker}/markets/{self.market_ticker}/candlesticks",
@@ -113,72 +118,81 @@ class KalshiAnalyzer(KalshiClient):
         )
 
         candles = data.get("candlesticks", [])
-        rows = [{"ts": c["end_period_ts"], **c["price"]} for c in candles]
+        if not candles:
+            return pd.Series(name="mean_dollars", dtype=float)
 
+        # Robust extraction: filter out candles without price data
+        rows = [{"ts": c["end_period_ts"], **c.get("price", {})} for c in candles if "price" in c]
+        
         df = pd.DataFrame(rows)
-        if df.empty:
-            return pd.Series(dtype=float)
+        if df.empty or "mean_dollars" not in df.columns:
+            return pd.Series(name="mean_dollars", dtype=float)
 
         df["ts"] = pd.to_datetime(df["ts"], unit="s", utc=True).dt.normalize()
         prices = df.set_index("ts")["mean_dollars"].astype(float) * 100.0
 
-        if plot:
-            prices.plot()
+        if plot and not prices.empty:
+            prices.ffill().plot(title=f"Prices for {self.market_ticker}")
 
         return prices.sort_index().ffill()
-
+    
     def get_trades_data(
         self,
-        start_ts: str = "2025-09-23",
-        end_ts: str = "2026-02-15",
+        start_ts: str = None,
+        end_ts: str = None,
         plot: bool = True,
     ):
+        end_ts = end_ts or datetime.now().strftime("%Y-%m-%d")
+        start_ts = start_ts or (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
         start = self._convert_ts(start_ts)
         end = self._convert_ts(end_ts)
         path = "/markets/trades"
         cursor = ""
         trades = []
-        n = 1
-
-        while n != 0:
-            params = {
-                "ticker": self.market_ticker,
-                "min_ts": start,
-                "max_ts": end,
-                "limit": 1000,
-                "cursor": cursor,
-            }
+        
+        while True:
+            params = {"ticker": self.market_ticker, "min_ts": start, "max_ts": end, "limit": 1000}
+            if cursor: params["cursor"] = cursor
 
             trades_data = self._get(path=path, params=params)
-            cursor = trades_data["cursor"]
-            n = len(cursor)
-            trades = trades + trades_data["trades"]
+            batch = trades_data.get("trades", [])
+            if not batch:
+                break
+                
+            trades.extend(batch)
+            cursor = trades_data.get("cursor")
+            if not cursor:
+                break
+
+        # Check if trades is empty
+        if not trades:
+            empty_vol = pd.DataFrame(columns=["yes", "no"])
+            self.trades_data, self.volumes = pd.DataFrame(), empty_vol
+            return empty_vol
+
         trades_data = pd.DataFrame(trades)
-        trades_data["trade_day"] = pd.to_datetime(
-            trades_data["created_time"]
-        ).dt.normalize()
+        trades_data["trade_day"] = pd.to_datetime(trades_data["created_time"]).dt.normalize()
+
+        # Vectorized calculation with fallback for missing columns
+        for side in ["yes", "no"]:
+            price_col = f"{side}_price"
+            if price_col not in trades_data.columns:
+                trades_data[price_col] = 0
 
         mask = trades_data["taker_side"] == "yes"
-        trades_data.loc[mask, "trade_value"] = (
-            trades_data.loc[mask, "count"] * trades_data.loc[mask, "yes_price"]
-        )
-        trades_data.loc[~mask, "trade_value"] = (
-            trades_data.loc[~mask, "count"] * trades_data.loc[~mask, "no_price"]
-        )
+        trades_data["trade_value"] = 0.0
+        trades_data.loc[mask, "trade_value"] = trades_data["count"] * trades_data["yes_price"]
+        trades_data.loc[~mask, "trade_value"] = trades_data["count"] * trades_data["no_price"]
 
-        volumes = (
-            trades_data.groupby(["trade_day", "taker_side"])["trade_value"]
-            .sum()
-            .unstack()
-        ).fillna(0.0)
+        # Pivot with reindex to guarantee 'yes' and 'no' columns even if one side is missing
+        volumes = trades_data.groupby(["trade_day", "taker_side"])["trade_value"].sum().unstack()
+        volumes = volumes.reindex(columns=["yes", "no"]).fillna(0.0)
         volumes = volumes.rename_axis(columns=None)
 
-        self.trades_data = trades_data
-        self.volumes = volumes
+        self.trades_data, self.volumes = trades_data, volumes
 
-        if plot:
-            volumes["yes"].plot()
-            volumes["no"].plot()
+        if plot and not volumes.empty:
+            volumes.fillna(0).plot(kind='bar', stacked=True, title=f"Volumes for {self.market_ticker}")
 
         return volumes
