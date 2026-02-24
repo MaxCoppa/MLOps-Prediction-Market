@@ -5,6 +5,8 @@ import lightgbm as lgb
 from tqdm import tqdm
 from datetime import datetime, timedelta, timezone
 from sklearn.metrics import r2_score, accuracy_score
+import warnings
+warnings.filterwarnings("ignore")
 
 class KalshiResearch:
     def __init__(self, base_url="https://api.elections.kalshi.com/trade-api/v2"):
@@ -22,13 +24,12 @@ class KalshiResearch:
         try:
             response = requests.get(url, params=params)
             response.raise_for_status()
-            # Returns a DataFrame of series with tickers and total volumes
             return pd.DataFrame(response.json().get("series", []))
         except Exception as e:
             print(f"Error fetching series: {e}")
             return pd.DataFrame()
 
-    def fetch_markets_from_series(self, series_tickers, limit_per_series=1000):
+    def fetch_markets_from_series(self, series_tickers, limit=1000):
         """
         Retrieves all individual markets for a given list of series tickers.
         """
@@ -36,7 +37,7 @@ class KalshiResearch:
         url = f"{self.base_url}/markets/"
         
         for ticker in tqdm(series_tickers, desc="Extracting Markets"):
-            params = {"series_ticker": ticker, "limit": limit_per_series}
+            params = {"series_ticker": ticker, "limit": limit}
             try:
                 res = requests.get(url, params=params)
                 res.raise_for_status()
@@ -46,12 +47,11 @@ class KalshiResearch:
                 print(f"Error fetching markets for series {ticker}: {e}")
                 continue
                 
-        # Returns a DataFrame where each row is a tradable market (ticker, close_time, etc.)
         return pd.DataFrame(all_markets)
     
     def fetch_data(self, tickers, days=1000):
         """Standard batch fetching logic."""
-        end_ts = int(datetime.now(timezone.utc).timestamp())
+        end_ts = int(datetime.now(timezone.utc).timestamp() - 60)
         start_ts = end_ts - (days * 86400)
         all_candles = []
         batch_size = int(10000/days)
@@ -64,9 +64,14 @@ class KalshiResearch:
             for m in res.get("markets", []):
                 t = m["market_ticker"]
                 for c in m.get("candlesticks", []):
-                    all_candles.append({"ticker": t, "ts": pd.to_datetime(c["start_period_ts"], unit="s", utc=True),
-                                      **c.get("price", {}), "volume": c.get("volume")})
-        
+                    # all_candles.append({"ticker": t, "ts": pd.to_datetime(c["start_period_ts"], unit="s", utc=True),
+                    #                   **c.get("price", {}), "volume": c.get("volume")})
+                    all_candles.append({
+                        "ticker": t,
+                        "ts": pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
+                        "volume": c.get("volume"),
+                        **c.get("price", {})
+                    })
         self.df = pd.DataFrame(all_candles).set_index(["ts", "ticker"]).sort_index().astype(float)
         return self.df
 
@@ -101,7 +106,8 @@ class KalshiResearch:
             X_train, y_train = self.X.loc[days[:i]], self.y.loc[days[:i]]
             X_test, y_test = self.X.loc[[days[i]]], self.y.loc[[days[i]]]
             
-            if len(X_train) < 50: continue
+            if len(X_train) < 50: 
+                continue
             
             model_obj.fit(X_train, y_train)
             y_hat = model_obj.predict(X_test)
