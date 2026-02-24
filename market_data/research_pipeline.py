@@ -100,25 +100,57 @@ class KalshiResearch:
         (LightGBM, XGBoost, Scikit-Learn, LinearRegression, etc.)
         """
         days = self.X.index.get_level_values(0).unique().sort_values()
-        metrics = []
+
+        results = []
+        iter_metrics = []
 
         for i in tqdm(range(min_train, len(days)), desc="Backtesting"):
+            
             X_train, y_train = self.X.loc[days[:i]], self.y.loc[days[:i]]
             X_test, y_test = self.X.loc[[days[i]]], self.y.loc[[days[i]]]
+            test_day = days[i]
             
-            if len(X_train) < 50: 
+            if len(X_train) < 50 or len(X_test) == 0: 
                 continue
-            
+        
             model_obj.fit(X_train, y_train)
-            y_hat = model_obj.predict(X_test)
             
-            # PnL & Metrics
-            norm_pnl = (y_hat / (np.sum(np.abs(y_hat)) + 1e-9)) * y_test.values
-            metrics.append({'ts': days[i], 'r2': r2_score(y_test, y_hat), 
-                            'acc': accuracy_score(np.sign(y_test.values), np.sign(y_hat)),
-                            'pnl': np.sum(norm_pnl)})
+            y_hat_train = model_obj.predict(X_train)
+            y_hat_test = model_obj.predict(X_test)
 
-        return pd.DataFrame(metrics).set_index('ts')
+            r2_train = r2_score(y_train, y_hat_train)
+            r2_test = r2_score(y_test, y_hat_test)
+            
+            acc_train = accuracy_score(np.sign(y_train.values), np.sign(y_hat_train))
+            acc_test = accuracy_score(np.sign(y_test.values), np.sign(y_hat_test))
+
+            raw_pnl = y_hat_test * y_test.values
+            daily_exposure = np.sum(np.abs(y_hat_test)) + 1e-9
+            norm_weight = y_hat_test / daily_exposure
+            norm_pnl = norm_weight * y_test.values
+            
+            iter_metrics.append({
+                'ts': test_day,
+                'r2_train': r2_train,
+                'r2_test': r2_test,
+                'acc_train': acc_train,
+                'acc_test': acc_test,
+                'daily_raw_pnl': np.sum(raw_pnl),
+                'daily_norm_pnl': np.sum(norm_pnl)
+            })
+            
+            results.append(pd.DataFrame({
+                'ticker': X_test.index.get_level_values(1), # Le ticker est au niveau 1
+                'y_true': y_test.values,
+                'y_hat': y_hat_test,
+                'raw_pnl': raw_pnl,
+                'norm_pnl': norm_pnl
+            }, index=X_test.index))
+        
+        final_df = pd.concat(results).drop(columns = "ticker")
+        metrics_df = pd.DataFrame(iter_metrics).set_index('ts')
+
+        return final_df, metrics_df
 
 # # --- EXEMPLE D'UTILISATION FLEXIBLE ---
 
