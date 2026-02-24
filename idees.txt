@@ -2,3 +2,7 @@
 - utiliser https://docs.kalshi.com/api-reference/market/batch-get-market-candlesticks
   pour récupérer prix/volumes en même temps et par batch
 - refactoriser tout bien
+
+24/02 : 
+- avant de refactoriser, trouver un moyen de train 
+  sans biais du survivant (tri sur volume)
