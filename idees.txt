@@ -6,3 +6,7 @@
 24/02 : 
 - avant de refactoriser, trouver un moyen de train 
   sans biais du survivant (tri sur volume)
+- comment faire ?
+  1 - prendre la liste de tous les tickers (fermés ou pas) 
+  2 - récupérer toutes les data
+  3 - filtrer le X avec (rolling volume > thresh)
