@@ -85,8 +85,9 @@ class KalshiResearch:
         features = feature_func(self.df)
         
         # 2. Target calculation (Next day return)
-        target = self.df.groupby(level=1)[target_col].pct_change().groupby(level=1).shift(-1)
-        
+        shifted_next = self.df.groupby(level=1)[target_col].shift(-1)
+        target = (shifted_next / self.df[target_col].replace(0,np.nan)) - 1
+    
         # 3. Automatic Lagging of features
         lagged_list = [features.groupby(level=1).shift(i).add_suffix(f'_L{i}') for i in range(lags)]
         self.X = pd.concat(lagged_list, axis=1)
@@ -94,26 +95,35 @@ class KalshiResearch:
         self.X = self.X.loc[self.y.index]
         return self.X, self.y
 
-    def run_backtest(self, model_obj, min_train=10):
+    def run_backtest(self, model_obj, min_train=10, refit_freq=30):
         """
-        Flexibilité sur le modèle : accepte n'importe quel objet avec .fit() et .predict()
-        (LightGBM, XGBoost, Scikit-Learn, LinearRegression, etc.)
+        Backtest with periodic model re-training.
+        refit_freq: Number of steps between model fits.
         """
         days = self.X.index.get_level_values(0).unique().sort_values()
-
-        results = []
-        iter_metrics = []
+        results, iter_metrics = [], []
+        
+        # Track the current model state
+        model_is_trained = False
 
         for i in tqdm(range(min_train, len(days)), desc="Backtesting"):
-            
-            X_train, y_train = self.X.loc[days[:i]], self.y.loc[days[:i]]
-            X_test, y_test = self.X.loc[[days[i]]], self.y.loc[[days[i]]]
             test_day = days[i]
+            X_test, y_test = self.X.loc[[test_day]], self.y.loc[[test_day]]
             
-            if len(X_train) < 50 or len(X_test) == 0: 
+            if len(X_test) == 0: 
                 continue
-        
-            model_obj.fit(X_train, y_train)
+
+            # Refit logic: only if frequency is met or model never trained
+            if (i - min_train) % refit_freq == 0 or not model_is_trained:
+                X_train, y_train = self.X.loc[days[:i]], self.y.loc[days[:i]]
+                if len(X_train) >= 50:
+                    model_obj.fit(X_train, y_train)
+                    model_is_trained = True
+                else:
+                    continue
+
+            if not model_is_trained: 
+                continue
             
             y_hat_train = model_obj.predict(X_train)
             y_hat_test = model_obj.predict(X_test)
