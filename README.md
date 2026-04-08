@@ -1,3 +1,5 @@
+[![ci](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/prod.yml/badge.svg)](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/prod.yml)
+
 # MLOps Prediction Market
 
 LightGBM-based pipelines for Kalshi market prediction at two levels:
