@@ -50,22 +50,23 @@ Run the pipeline on a **single market ticker** such as `KXGDP-26APR30-T1.5`:
 uv run python predict_ticker.py KXGDP-26APR30-T1.5
 ```
 
-### Outputs
+## Outputs
 
-All outputs are saved in the outputs/ directory. (This can be changes)
+All outputs are saved in the `outputs/` directory (this can be changed via CLI arguments).
 
-1. For Series pipeline
+### 1. Series pipeline outputs
 
-serie_name_backtest_results_opt.csv → optimized strategy results
-serie_name_backtest_results_def.csv → baseline/default strategy results
-serie_name_per_ticker_pnl.csv → per-ticker PnL breakdown
-serie_name_report.json → aggregated performance report
-serie_name_series_pnl.png → global PnL curve across the series
+* `series_name_backtest_results_opt.csv` → optimized strategy results
+* `series_name_backtest_results_def.csv` → baseline/default strategy results
+* `series_name_per_ticker_pnl.csv` → per-ticker PnL breakdown
+* `series_name_report.json` → aggregated performance report
+* `series_name_series_pnl.png` → global PnL curve across the series
 
-2. For Ticker pipeline
+### 2. Ticker pipeline outputs
 
-ticker_name_backtest_results.csv → detailed backtest results
-ticker_name_report.json → performance metrics (MAE, etc.)
-ticker_name_model.txt → trained LightGBM model
-ticker_name_pnl_curve.png → PnL curve visualization
+* `ticker_name_backtest_results.csv` → detailed backtest results
+* `ticker_name_report.json` → performance metrics (MAE, etc.)
+* `ticker_name_model.txt` → trained LightGBM model
+* `ticker_name_pnl_curve.png` → PnL curve visualization
+
 
