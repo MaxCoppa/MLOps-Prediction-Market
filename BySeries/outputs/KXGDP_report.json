@@ -1,0 +1,27 @@
+{
+  "series_ticker": "KXGDP",
+  "n_tickers": 17,
+  "n_days": 83,
+  "total_pnl": 1.1557,
+  "mean_daily_pnl": 0.013924,
+  "sharpe_ratio": 2.811,
+  "max_drawdown": -0.2802,
+  "win_rate": 0.59,
+  "global_r2_test": -0.1338,
+  "global_acc_test": 0.53,
+  "mean_r2_train": 0.4801,
+  "mean_acc_train": 0.716,
+  "best_val_mae": 0.076126,
+  "best_params": {
+    "boosting_type": "gbdt",
+    "num_leaves": 18,
+    "max_depth": 6,
+    "learning_rate": 0.09749608282717964,
+    "n_estimators": 370,
+    "min_child_samples": 67,
+    "subsample": 0.49841685987230444,
+    "colsample_bytree": 0.8067786902581473,
+    "reg_alpha": 0.025269253270200003,
+    "reg_lambda": 0.0023572157218870937
+  }
+}
