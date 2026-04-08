@@ -7,6 +7,6 @@ __all__ = [
     "performance_report",
 ]
 
-from .data_series import fetch_tickers, fetch_data, build_features
-from .model_series import bayesian_optimisation
-from .backtest_series import run_backtest, performance_report
+from .data import fetch_tickers, fetch_data, build_features
+from .model import bayesian_optimisation
+from .backtest import run_backtest, performance_report
