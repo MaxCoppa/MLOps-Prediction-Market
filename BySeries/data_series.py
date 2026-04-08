@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import requests
 from datetime import datetime, timedelta, timezone
+import time
 from typing import Tuple
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from logger import get_logger
 
 log = get_logger()
@@ -44,99 +46,110 @@ def fetch_series_tickers(series_ticker: str) -> list[str]:
 # 2.  FETCH RAW DATA FOR ALL TICKERS  →  MultiIndex DataFrame
 # ─────────────────────────────────────────────────────────────────────────────
 
-def fetch_series_data(
-    series_ticker: str,
-    tickers: list[str],
-    window_days: int = 365,
-) -> pd.DataFrame:
-    """
-    Fetch daily candlestick + trade volume for every ticker in the series.
-
-    Returns a DataFrame with MultiIndex (date, ticker) and columns:
-        price, open, high, low, close, volume, vol_yes, vol_no, vol_total
-    """
+def _fetch_trades_worker(ticker: str, start_ts: int, end_ts: int) -> list[dict]:
     session = requests.Session()
-    end_dt   = datetime.now(timezone.utc)
-    start_dt = end_dt - timedelta(days=window_days)
-    start_ts = int(start_dt.timestamp())
-    end_ts   = int(end_dt.timestamp())
+    cursor, trades = "", []
+    
+    while True:
+        params = {"ticker": ticker, "min_ts": start_ts, "max_ts": end_ts, "limit": 1000}
+        if cursor: 
+            params["cursor"] = cursor
+            
+        try:
+            resp = session.get(f"{API_URL}/markets/trades", params=params)
+            if resp.status_code == 429:
+                time.sleep(2.0)
+                continue
+            resp.raise_for_status()
+            
+            data = resp.json()
+            batch = data.get("trades", [])
+            for t in batch:
+                t["_ticker"] = ticker
+            trades.extend(batch)
+            
+            cursor = data.get("cursor")
+            time.sleep(0.06) 
+            if not cursor or not batch:
+                break
+                
+        except requests.exceptions.RequestException as e:
+            log.error(f"Worker network error on {ticker}: {e}")
+            break
+            
+    return trades
 
-    # ── candlesticks (batch endpoint) ─────────────────────────────────────────
+def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int = 365) -> pd.DataFrame:
+    session = requests.Session()
+    end_dt = datetime.now(timezone.utc)
+    start_ts = int((end_dt - timedelta(days=window_days)).timestamp())
+    end_ts = int(end_dt.timestamp())
+
     log.info(f"Fetching candlesticks for {len(tickers)} tickers …")
     all_candles = []
-    batch_size  = max(1, int(10_000 / max(window_days, 1)))   # stay under API limits
+    batch_size = max(1, int(10_000 / max(window_days, 1)))
 
     for i in tqdm(range(0, len(tickers), batch_size), desc="Candlesticks", ncols=80):
         batch = tickers[i : i + batch_size]
-        params = {
-            "market_tickers": ",".join(batch),
-            "start_ts":       start_ts,
-            "end_ts":         end_ts,
-            "period_interval": 1440,
-        }
-        resp = session.get(f"{API_URL}/markets/candlesticks", params=params)
-        resp.raise_for_status()
-        for m in resp.json().get("markets", []):
-            t = m["market_ticker"]
-            for c in m.get("candlesticks", []):
-                if "price" not in c:
+        params = {"market_tickers": ",".join(batch), "start_ts": start_ts, "end_ts": end_ts, "period_interval": 1440}
+        
+        try:
+            while True:
+                resp = session.get(f"{API_URL}/markets/candlesticks", params=params)
+                if resp.status_code == 429:
+                    time.sleep(2.0)
                     continue
-                all_candles.append({
-                    "ts":     pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
-                    "ticker": t,
-                    "open":   c["price"].get("open_dollars",  np.nan),
-                    "high":   c["price"].get("high_dollars",  np.nan),
-                    "low":    c["price"].get("low_dollars",   np.nan),
-                    "close":  c["price"].get("close_dollars", np.nan),
-                    "mean":   c["price"].get("mean_dollars",  np.nan),
-                    "volume": c.get("volume", 0),
-                })
+                resp.raise_for_status()
+                break
+                
+            for m in resp.json().get("markets", []):
+                t = m["market_ticker"]
+                for c in m.get("candlesticks", []):
+                    if "price" in c:
+                        all_candles.append({
+                            "ts": pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
+                            "ticker": t,
+                            "open": c["price"].get("open_dollars", np.nan),
+                            "high": c["price"].get("high_dollars", np.nan),
+                            "low": c["price"].get("low_dollars", np.nan),
+                            "close": c["price"].get("close_dollars", np.nan),
+                            "mean": c["price"].get("mean_dollars", np.nan),
+                            "volume": c.get("volume", 0),
+                        })
+            time.sleep(0.06)
+        except requests.exceptions.RequestException as e:
+            log.error(f"Candlesticks network error: {e}")
+            break
 
     if not all_candles:
         raise ValueError(f"No candlestick data returned for series '{series_ticker}'.")
 
-    df_candles = (
-        pd.DataFrame(all_candles)
-        .set_index(["ts", "ticker"])
-        .sort_index()
-        .astype(float)
-    )
-    df_candles["price"] = df_candles["mean"] * 100   # → cents
-    # ── trades: YES / NO volume per ticker per day ────────────────────────────
-    log.info(f"Fetching trade history for {len(tickers)} tickers …")
-    all_trades = []
+    df_candles = pd.DataFrame(all_candles).set_index(["ts", "ticker"]).sort_index().astype(float)
+    df_candles["price"] = df_candles["mean"] * 100
 
-    for ticker in tqdm(tickers, desc="Trades", ncols=80):
-        cursor = ""
-        while True:
-            params = {
-                "ticker":  ticker,
-                "min_ts":  start_ts,
-                "max_ts":  end_ts,
-                "limit":   1000,
-            }
-            if cursor:
-                params["cursor"] = cursor
-            data    = session.get(f"{API_URL}/markets/trades", params=params).json()
-            batch   = data.get("trades", [])
-            if not batch:
-                break
-            for trade in batch:
-                trade["_ticker"] = ticker
-            all_trades.extend(batch)
-            cursor = data.get("cursor")
-            if not cursor:
-                break
+    log.info(f"Fetching trade history in parallel (20 workers) …")
+    all_trades = []
+    
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_ticker = {executor.submit(_fetch_trades_worker, t, start_ts, end_ts): t for t in tickers}
+        
+        for future in tqdm(as_completed(future_to_ticker), total=len(tickers), desc="Trades", ncols=80):
+            try:
+                trades_batch = future.result()
+                all_trades.extend(trades_batch)
+            except Exception as e:
+                ticker = future_to_ticker[future]
+                log.error(f"Thread execution failed for {ticker}: {e}")
 
     if all_trades:
         df_t = pd.DataFrame(all_trades)
-        df_t["ts"]     = pd.to_datetime(df_t["created_time"], utc=True).dt.normalize()
+        df_t["ts"] = pd.to_datetime(df_t["created_time"], format="ISO8601", utc=True).dt.normalize()
         df_t["ticker"] = df_t["_ticker"]
 
         for col in ["count_fp", "yes_price_dollars", "no_price_dollars"]:
             df_t[col] = df_t[col].astype(float) if col in df_t.columns else 0.0
 
-        mask_yes    = df_t["taker_side"] == "yes"
+        mask_yes = df_t["taker_side"] == "yes"
         df_t["val"] = np.where(
             mask_yes,
             df_t["count_fp"] * df_t["yes_price_dollars"],
@@ -150,33 +163,29 @@ def fetch_series_data(
             .reindex(columns=["yes", "no"], fill_value=0.0)
             .rename(columns={"yes": "vol_yes", "no": "vol_no"})
         )
-        # Normalize the datetime level (level 0) of the MultiIndex for candlesticks
+
         normalized_ts_candles = pd.to_datetime(df_candles.index.get_level_values('ts')).normalize()
         df_candles.index = pd.MultiIndex.from_arrays(
             [normalized_ts_candles, df_candles.index.get_level_values('ticker')],
             names=['ts', 'ticker']
         )
 
-        # Normalize the datetime level (level 0) of the MultiIndex for volume
         normalized_ts_vol = pd.to_datetime(daily_vol.index.get_level_values('ts')).normalize()
         daily_vol.index = pd.MultiIndex.from_arrays(
             [normalized_ts_vol, daily_vol.index.get_level_values('ticker')],
             names=['ts', 'ticker']
         )
 
-        # Perform the relational join on identical MultiIndex keys
         df_candles = df_candles.join(daily_vol, how="left").fillna(0.0)
-        
     else:
         df_candles["vol_yes"] = 0.0
-        df_candles["vol_no"]  = 0.0
+        df_candles["vol_no"] = 0.0
 
     df_candles["vol_total"] = df_candles["vol_yes"] + df_candles["vol_no"]
     n_tickers = df_candles.index.get_level_values("ticker").nunique()
-    n_dates   = df_candles.index.get_level_values("ts").nunique()
+    n_dates = df_candles.index.get_level_values("ts").nunique()
     log.info(f"Panel ready: {n_tickers} tickers × {n_dates} dates = {len(df_candles)} rows")
     return df_candles
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3.  FEATURE ENGINEERING  →  panel (date, ticker) MultiIndex
