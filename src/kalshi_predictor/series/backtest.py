@@ -4,6 +4,7 @@ import lightgbm as lgb
 import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import mlflow
 from sklearn.metrics import accuracy_score, r2_score
 from tqdm import tqdm
 from typing import Tuple
@@ -388,7 +389,14 @@ def performance_report(
     plt.close()
     log.info(f"Plot saved → {plot_path}")
 
-    ticker_pnl.to_csv(
-        os.path.join(output_dir, f"{safe}_per_ticker_pnl.csv"), header=["total_pnl"]
-    )
+    ticker_pnl_path = os.path.join(output_dir, f"{safe}_per_ticker_pnl.csv")
+    ticker_pnl.to_csv(ticker_pnl_path, header=["total_pnl"])
+
+    if mlflow.active_run():
+        mlflow.log_metrics(
+            {k: v for k, v in report.items() if isinstance(v, (int, float))}
+        )
+        mlflow.log_artifact(plot_path)
+        mlflow.log_artifact(ticker_pnl_path)
+
     return report

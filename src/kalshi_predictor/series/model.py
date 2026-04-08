@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import optuna
 import lightgbm as lgb
+import mlflow
 from typing import Tuple
 import json
 from ..utils import get_logger
@@ -44,6 +45,24 @@ def bayesian_optimisation(
         model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)])
         preds = model.predict(X_val)
         mse = np.mean((preds - y_val.values) ** 2)
+
+        with mlflow.start_run(nested=True, run_name=f"trial_{trial.number}"):
+            mlflow.log_params(
+                {
+                    k: v
+                    for k, v in params.items()
+                    if k
+                    not in (
+                        "objective",
+                        "metric",
+                        "verbosity",
+                        "n_jobs",
+                        "random_state",
+                    )
+                }
+            )
+            mlflow.log_metric("val_mse", mse)
+
         return mse
 
     study = optuna.create_study(

@@ -31,6 +31,9 @@ def fetch_tickers(series_ticker: str) -> list[str]:
         if cursor:
             params["cursor"] = cursor
         resp = session.get(f"{API_URL}/markets", params=params)
+        if resp.status_code == 429:
+            time.sleep(2.0)
+            continue
         resp.raise_for_status()
         data = resp.json()
         batch = [m["ticker"] for m in data.get("markets", [])]
