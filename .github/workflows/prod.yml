@@ -26,4 +26,4 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: true
-          tags: username/application:latest
+          tags: vars.DOCKERHUB_USERNAME/application:latest
