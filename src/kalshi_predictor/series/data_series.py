@@ -6,7 +6,7 @@ import time
 from typing import Tuple
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from logger import get_logger
+from ..utils import get_logger
 
 log = get_logger()
 
@@ -17,7 +17,8 @@ API_URL = "https://api.elections.kalshi.com/trade-api/v2"
 # 1.  DISCOVER TICKERS IN A SERIES
 # ─────────────────────────────────────────────────────────────────────────────
 
-def fetch_series_tickers(series_ticker: str) -> list[str]:
+
+def fetch_tickers(series_ticker: str) -> list[str]:
     """
     Return all market tickers belonging to a series.
     """
@@ -46,40 +47,44 @@ def fetch_series_tickers(series_ticker: str) -> list[str]:
 # 2.  FETCH RAW DATA FOR ALL TICKERS  →  MultiIndex DataFrame
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _fetch_trades_worker(ticker: str, start_ts: int, end_ts: int) -> list[dict]:
     session = requests.Session()
     cursor, trades = "", []
-    
+
     while True:
         params = {"ticker": ticker, "min_ts": start_ts, "max_ts": end_ts, "limit": 1000}
-        if cursor: 
+        if cursor:
             params["cursor"] = cursor
-            
+
         try:
             resp = session.get(f"{API_URL}/markets/trades", params=params)
             if resp.status_code == 429:
                 time.sleep(2.0)
                 continue
             resp.raise_for_status()
-            
+
             data = resp.json()
             batch = data.get("trades", [])
             for t in batch:
                 t["_ticker"] = ticker
             trades.extend(batch)
-            
+
             cursor = data.get("cursor")
-            time.sleep(0.06) 
+            time.sleep(0.06)
             if not cursor or not batch:
                 break
-                
+
         except requests.exceptions.RequestException as e:
             log.error(f"Worker network error on {ticker}: {e}")
             break
-            
+
     return trades
 
-def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int = 365) -> pd.DataFrame:
+
+def fetch_data(
+    series_ticker: str, tickers: list[str], window_days: int = 365
+) -> pd.DataFrame:
     session = requests.Session()
     end_dt = datetime.now(timezone.utc)
     start_ts = int((end_dt - timedelta(days=window_days)).timestamp())
@@ -91,8 +96,13 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
 
     for i in tqdm(range(0, len(tickers), batch_size), desc="Candlesticks", ncols=80):
         batch = tickers[i : i + batch_size]
-        params = {"market_tickers": ",".join(batch), "start_ts": start_ts, "end_ts": end_ts, "period_interval": 1440}
-        
+        params = {
+            "market_tickers": ",".join(batch),
+            "start_ts": start_ts,
+            "end_ts": end_ts,
+            "period_interval": 1440,
+        }
+
         try:
             while True:
                 resp = session.get(f"{API_URL}/markets/candlesticks", params=params)
@@ -101,21 +111,25 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
                     continue
                 resp.raise_for_status()
                 break
-                
+
             for m in resp.json().get("markets", []):
                 t = m["market_ticker"]
                 for c in m.get("candlesticks", []):
                     if "price" in c:
-                        all_candles.append({
-                            "ts": pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
-                            "ticker": t,
-                            "open": c["price"].get("open_dollars", np.nan),
-                            "high": c["price"].get("high_dollars", np.nan),
-                            "low": c["price"].get("low_dollars", np.nan),
-                            "close": c["price"].get("close_dollars", np.nan),
-                            "mean": c["price"].get("mean_dollars", np.nan),
-                            "volume": c.get("volume", 0),
-                        })
+                        all_candles.append(
+                            {
+                                "ts": pd.to_datetime(
+                                    c["end_period_ts"], unit="s", utc=True
+                                ),
+                                "ticker": t,
+                                "open": c["price"].get("open_dollars", np.nan),
+                                "high": c["price"].get("high_dollars", np.nan),
+                                "low": c["price"].get("low_dollars", np.nan),
+                                "close": c["price"].get("close_dollars", np.nan),
+                                "mean": c["price"].get("mean_dollars", np.nan),
+                                "volume": c.get("volume", 0),
+                            }
+                        )
             time.sleep(0.06)
         except requests.exceptions.RequestException as e:
             log.error(f"Candlesticks network error: {e}")
@@ -124,16 +138,23 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
     if not all_candles:
         raise ValueError(f"No candlestick data returned for series '{series_ticker}'.")
 
-    df_candles = pd.DataFrame(all_candles).set_index(["ts", "ticker"]).sort_index().astype(float)
+    df_candles = (
+        pd.DataFrame(all_candles).set_index(["ts", "ticker"]).sort_index().astype(float)
+    )
     df_candles["price"] = df_candles["mean"] * 100
 
     log.info(f"Fetching trade history in parallel (20 workers) …")
     all_trades = []
-    
+
     with ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_ticker = {executor.submit(_fetch_trades_worker, t, start_ts, end_ts): t for t in tickers}
-        
-        for future in tqdm(as_completed(future_to_ticker), total=len(tickers), desc="Trades", ncols=80):
+        future_to_ticker = {
+            executor.submit(_fetch_trades_worker, t, start_ts, end_ts): t
+            for t in tickers
+        }
+
+        for future in tqdm(
+            as_completed(future_to_ticker), total=len(tickers), desc="Trades", ncols=80
+        ):
             try:
                 trades_batch = future.result()
                 all_trades.extend(trades_batch)
@@ -143,7 +164,9 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
 
     if all_trades:
         df_t = pd.DataFrame(all_trades)
-        df_t["ts"] = pd.to_datetime(df_t["created_time"], format="ISO8601", utc=True).dt.normalize()
+        df_t["ts"] = pd.to_datetime(
+            df_t["created_time"], format="ISO8601", utc=True
+        ).dt.normalize()
         df_t["ticker"] = df_t["_ticker"]
 
         for col in ["count_fp", "yes_price_dollars", "no_price_dollars"]:
@@ -164,16 +187,20 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
             .rename(columns={"yes": "vol_yes", "no": "vol_no"})
         )
 
-        normalized_ts_candles = pd.to_datetime(df_candles.index.get_level_values('ts')).normalize()
+        normalized_ts_candles = pd.to_datetime(
+            df_candles.index.get_level_values("ts")
+        ).normalize()
         df_candles.index = pd.MultiIndex.from_arrays(
-            [normalized_ts_candles, df_candles.index.get_level_values('ticker')],
-            names=['ts', 'ticker']
+            [normalized_ts_candles, df_candles.index.get_level_values("ticker")],
+            names=["ts", "ticker"],
         )
 
-        normalized_ts_vol = pd.to_datetime(daily_vol.index.get_level_values('ts')).normalize()
+        normalized_ts_vol = pd.to_datetime(
+            daily_vol.index.get_level_values("ts")
+        ).normalize()
         daily_vol.index = pd.MultiIndex.from_arrays(
-            [normalized_ts_vol, daily_vol.index.get_level_values('ticker')],
-            names=['ts', 'ticker']
+            [normalized_ts_vol, daily_vol.index.get_level_values("ticker")],
+            names=["ts", "ticker"],
         )
 
         df_candles = df_candles.join(daily_vol, how="left").fillna(0.0)
@@ -184,14 +211,18 @@ def fetch_series_data(series_ticker: str, tickers: list[str], window_days: int =
     df_candles["vol_total"] = df_candles["vol_yes"] + df_candles["vol_no"]
     n_tickers = df_candles.index.get_level_values("ticker").nunique()
     n_dates = df_candles.index.get_level_values("ts").nunique()
-    log.info(f"Panel ready: {n_tickers} tickers × {n_dates} dates = {len(df_candles)} rows")
+    log.info(
+        f"Panel ready: {n_tickers} tickers × {n_dates} dates = {len(df_candles)} rows"
+    )
     return df_candles
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3.  FEATURE ENGINEERING  →  panel (date, ticker) MultiIndex
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_panel_features(
+
+def build_features(
     df: pd.DataFrame,
     n_lags: int = 10,
     min_obs: int = 30,
@@ -220,31 +251,31 @@ def build_panel_features(
     for ticker in tqdm(tickers, desc="Features", ncols=80):
         sub = df.xs(ticker, level="ticker").sort_index()
 
-        price     = sub["price"].replace(0, np.nan)
-        ret       = price.pct_change()
+        price = sub["price"].replace(0, np.nan)
+        ret = price.pct_change()
         vol_total = sub["vol_total"].replace(0, np.nan)
-        vol_yes   = sub["vol_yes"]
-        vol_no    = sub["vol_no"]
+        vol_yes = sub["vol_yes"]
+        vol_no = sub["vol_no"]
 
         f = pd.DataFrame(index=sub.index)
 
         # lagged features
         for lag in range(1, n_lags + 1):
-            f[f"RET_{lag}"]       = ret.shift(lag)
-            f[f"VOL_YES_{lag}"]   = vol_yes.shift(lag)
-            f[f"VOL_NO_{lag}"]    = vol_no.shift(lag)
+            f[f"RET_{lag}"] = ret.shift(lag)
+            f[f"VOL_YES_{lag}"] = vol_yes.shift(lag)
+            f[f"VOL_NO_{lag}"] = vol_no.shift(lag)
             f[f"VOL_TOTAL_{lag}"] = vol_total.shift(lag)
 
         # rolling stats
         for window in [5, 10]:
-            f[f"RET_MEAN_{window}"]  = ret.shift(1).rolling(window).mean()
-            f[f"RET_STD_{window}"]   = ret.shift(1).rolling(window).std()
-            f[f"VOL_MEAN_{window}"]  = vol_total.shift(1).rolling(window).mean()
+            f[f"RET_MEAN_{window}"] = ret.shift(1).rolling(window).mean()
+            f[f"RET_STD_{window}"] = ret.shift(1).rolling(window).std()
+            f[f"VOL_MEAN_{window}"] = vol_total.shift(1).rolling(window).mean()
 
         # price level features
         roll_min = price.shift(1).rolling(20).min()
         roll_max = price.shift(1).rolling(20).max()
-        f["DIST_50"]     = (price.shift(1) - 50.0) / 50.0
+        f["DIST_50"] = (price.shift(1) - 50.0) / 50.0
         f["DIST_MIN_20"] = (price.shift(1) - roll_min) / (roll_max - roll_min + 1e-9)
         f["DIST_MAX_20"] = (roll_max - price.shift(1)) / (roll_max - roll_min + 1e-9)
         f["VOL_IMBALANCE"] = ((vol_yes - vol_no) / (vol_total + 1e-9)).shift(1)
@@ -263,12 +294,16 @@ def build_panel_features(
         frames.append(combined)
 
     if not frames:
-        raise ValueError("No tickers passed the min_obs filter. Try reducing min_obs or increasing window_days.")
+        raise ValueError(
+            "No tickers passed the min_obs filter. Try reducing min_obs or increasing window_days."
+        )
 
     panel = pd.concat(frames).sort_index()
     X = panel.drop(columns="__target__")
     y = panel["__target__"]
 
     kept = X.index.get_level_values("ticker").nunique()
-    log.info(f"Panel feature matrix: {X.shape[0]} rows × {X.shape[1]} features across {kept} tickers")
+    log.info(
+        f"Panel feature matrix: {X.shape[0]} rows × {X.shape[1]} features across {kept} tickers"
+    )
     return X, y
