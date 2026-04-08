@@ -1,0 +1,18 @@
+[project]
+name = "kalshi_predictor"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "lightgbm>=4.6.0",
+    "matplotlib>=3.10.8",
+    "optuna>=4.8.0",
+    "pandas>=3.0.2",
+    "requests>=2.33.1",
+    "scikit-learn>=1.8.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.4,<0.12"]
+build-backend = "uv_build"

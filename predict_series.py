@@ -2,14 +2,14 @@ import argparse
 import json
 from pathlib import Path
 
-from src.kalshi_predictor.utils import get_logger
-from src.kalshi_predictor.series.data_series import (
+from kalshi_predictor.utils import get_logger
+from kalshi_predictor.series.data_series import (
     fetch_tickers,
     fetch_data,
     build_features,
 )
-from src.kalshi_predictor.series.model_series import bayesian_optimisation
-from src.kalshi_predictor.series.backtest_series import run_backtest, performance_report
+from kalshi_predictor.series.model_series import bayesian_optimisation
+from kalshi_predictor.series.backtest_series import run_backtest, performance_report
 
 log = get_logger()
 

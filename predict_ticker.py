@@ -3,10 +3,10 @@ import json
 from pathlib import Path
 import lightgbm as lgb
 
-from src.kalshi_predictor.utils import get_logger
-from src.kalshi_predictor.ticker.data import fetch_data, build_features
-from src.kalshi_predictor.ticker.model import bayesian_optimisation
-from src.kalshi_predictor.ticker.backtest import run_backtest, performance_report
+from kalshi_predictor.utils import get_logger
+from kalshi_predictor.ticker.data import fetch_data, build_features
+from kalshi_predictor.ticker.model import bayesian_optimisation
+from kalshi_predictor.ticker.backtest import run_backtest, performance_report
 
 log = get_logger()
 
