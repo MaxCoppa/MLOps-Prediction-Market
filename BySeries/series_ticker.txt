@@ -2,7 +2,7 @@
 # KALSHI SERIES TICKERS
 # =========================
 
-# ---- MACRO (PRIORITÉ MAX) ----
+# ---- MACRO ----
 KXCPI
 KXCPIYOY
 KXPAYROLLS
@@ -12,7 +12,7 @@ KXFED
 KXFEDDECISION
 KXRATECUTCOUNT
 
-# ---- FINANCE / INDICES ----
+# ---- FINANCE ----
 KXNASDAQ100U
 KXINXPOS
 KXINXMAXY
@@ -22,32 +22,17 @@ KXINXMINY
 KXBTCD
 KXETHD
 
-# ---- ÉNERGIE / MACRO DIVERS ----
+# ---- ENERGY ----
 KXAAAGASM
 
-# ---- WEATHER (OPTIONNEL) ----
+# ---- WEATHER ----
 KXTEMP
 KXRAIN
 
-# ---- SPORTS (SHORT TERM / TEST ONLY) ----
+# ---- SPORTS ----
 KXNFLGAME
 KXSB
 KXNCAAMBGAME
 KXATPMATCH
 KXWTAMATCH
 
-# ---- EXPÉRIMENTAL / AUTRES ----
-KXIPO
-KXLLM1
-KXMARMAD
-
-
-# =========================
-# NOTES
-# =========================
-
-# - Les séries macro sont les seules vraiment exploitables
-# - Chaque série contient plusieurs markets (avec dates)
-# - Toujours résoudre un market actif avant d'appeler l'API
-# - Filtrer ensuite par volume > 0
-# - Attention : beaucoup de séries sont illiquides

@@ -252,7 +252,7 @@ def build_panel_features(
         # target
         y_ticker = ret.shift(-1).fillna(0).rename("__target__")
 
-        combined = pd.concat([f, y_ticker], axis=1).dropna(subset=list(f.columns))
+        combined = pd.concat([f, y_ticker], axis=1)
         if len(combined) < min_obs:
             continue  # skip illiquid / short-lived tickers
 
