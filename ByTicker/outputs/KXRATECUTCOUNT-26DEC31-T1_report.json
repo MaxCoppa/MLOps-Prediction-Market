@@ -1,0 +1,26 @@
+{
+  "ticker": "KXRATECUTCOUNT-26DEC31-T1",
+  "n_days": 130,
+  "total_pnl": -0.078,
+  "mean_daily_pnl": -0.0006,
+  "sharpe_ratio": -0.138,
+  "max_drawdown": -1.0889,
+  "win_rate": 0.369,
+  "mean_r2_train": -0.0136,
+  "mean_acc_train": 0.491,
+  "global_r2_test": -0.0153,
+  "global_acc_test": 0.466,
+  "best_val_mae": 0.040693,
+  "best_params": {
+    "boosting_type": "dart",
+    "num_leaves": 181,
+    "max_depth": 5,
+    "learning_rate": 0.004572007690657582,
+    "n_estimators": 144,
+    "min_child_samples": 72,
+    "subsample": 0.6732084109150394,
+    "colsample_bytree": 0.587395154875013,
+    "reg_alpha": 0.2296762506807914,
+    "reg_lambda": 3.901824488461394e-05
+  }
+}

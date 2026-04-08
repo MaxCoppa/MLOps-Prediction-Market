@@ -1,0 +1,26 @@
+{
+  "ticker": "KXGDP-26APR30-T1.5",
+  "n_days": 41,
+  "total_pnl": -0.2962,
+  "mean_daily_pnl": -0.007224,
+  "sharpe_ratio": -2.453,
+  "max_drawdown": -0.4307,
+  "win_rate": 0.512,
+  "mean_r2_train": 0.1772,
+  "mean_acc_train": 0.76,
+  "global_r2_test": -0.0832,
+  "global_acc_test": 0.553,
+  "best_val_mae": 0.01497,
+  "best_params": {
+    "boosting_type": "dart",
+    "num_leaves": 256,
+    "max_depth": 12,
+    "learning_rate": 0.01932996074475894,
+    "n_estimators": 121,
+    "min_child_samples": 12,
+    "subsample": 0.7980445851620153,
+    "colsample_bytree": 0.6917198508741347,
+    "reg_alpha": 0.00023759325230606143,
+    "reg_lambda": 7.20860378958878e-08
+  }
+}
