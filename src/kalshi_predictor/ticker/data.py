@@ -3,9 +3,10 @@ import numpy as np
 import requests
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
-from logger import get_logger
+from ..utils import get_logger
 
 log = get_logger()
+
 
 def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
     API_URL = "https://api.elections.kalshi.com/trade-api/v2"
@@ -18,7 +19,7 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
     parts = ticker.split("-")
     series_ticker = parts[0]
     log.info(f"Fetching candlesticks for {ticker} (series={series_ticker}) …")
-    
+
     resp = session.get(
         f"{API_URL}/series/{series_ticker}/markets/{ticker}/candlesticks",
         params={"start_ts": start_ts, "end_ts": end_ts, "period_interval": 1440},
@@ -27,21 +28,25 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
     candles = resp.json().get("candlesticks", [])
 
     if not candles:
-        raise ValueError(f"No candlestick data returned for ticker '{ticker}'. Check the ticker name and date range.")
+        raise ValueError(
+            f"No candlestick data returned for ticker '{ticker}'. Check the ticker name and date range."
+        )
 
     rows = []
     for c in candles:
         if "price" not in c:
             continue
-        rows.append({
-            "ts": pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
-            "open": c["price"].get("open_dollars", np.nan),
-            "high": c["price"].get("high_dollars", np.nan),
-            "low": c["price"].get("low_dollars", np.nan),
-            "close": c["price"].get("close_dollars", np.nan),
-            "mean": c["price"].get("mean_dollars", np.nan),
-            "volume": c.get("volume", 0),
-        })
+        rows.append(
+            {
+                "ts": pd.to_datetime(c["end_period_ts"], unit="s", utc=True),
+                "open": c["price"].get("open_dollars", np.nan),
+                "high": c["price"].get("high_dollars", np.nan),
+                "low": c["price"].get("low_dollars", np.nan),
+                "close": c["price"].get("close_dollars", np.nan),
+                "mean": c["price"].get("mean_dollars", np.nan),
+                "volume": c.get("volume", 0),
+            }
+        )
 
     df = pd.DataFrame(rows).set_index("ts").sort_index().astype(float).ffill()
     df["price"] = df["mean"] * 100
@@ -63,15 +68,19 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
 
     if all_trades:
         df_t = pd.DataFrame(all_trades)
-        
+
         # Strip time component natively during parsing
         df_t["ts"] = pd.to_datetime(df_t["created_time"], utc=True).dt.normalize()
-        
+
         for col in ["count_fp", "yes_price_dollars", "no_price_dollars"]:
             df_t[col] = df_t[col].astype(float) if col in df_t.columns else 0.0
-                
+
         mask_yes = df_t["taker_side"] == "yes"
-        df_t["val"] = np.where(mask_yes, df_t["count_fp"] * df_t["yes_price_dollars"], df_t["count_fp"] * df_t["no_price_dollars"])
+        df_t["val"] = np.where(
+            mask_yes,
+            df_t["count_fp"] * df_t["yes_price_dollars"],
+            df_t["count_fp"] * df_t["no_price_dollars"],
+        )
 
         daily_vol = (
             df_t.groupby(["ts", "taker_side"])["val"]
@@ -79,16 +88,23 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
             .unstack(fill_value=0.0)
             .reindex(columns=["yes", "no"], fill_value=0.0)
         )
-        
-        df = df.join(daily_vol.rename(columns={"yes": "vol_yes", "no": "vol_no"}), how="left").fillna(0.0)
+
+        df = df.join(
+            daily_vol.rename(columns={"yes": "vol_yes", "no": "vol_no"}), how="left"
+        ).fillna(0.0)
     else:
         df["vol_yes"] = df["vol_no"] = 0.0
 
     df["vol_total"] = df["vol_yes"] + df["vol_no"]
-    log.info(f"Data fetched: {len(df)} daily bars from {df.index[0].date()} to {df.index[-1].date()}")
+    log.info(
+        f"Data fetched: {len(df)} daily bars from {df.index[0].date()} to {df.index[-1].date()}"
+    )
     return df
 
-def build_features(df: pd.DataFrame, n_lags: int = 10) -> Tuple[pd.DataFrame, pd.Series]:
+
+def build_features(
+    df: pd.DataFrame, n_lags: int = 10
+) -> Tuple[pd.DataFrame, pd.Series]:
     f = pd.DataFrame(index=df.index)
     price = df["price"].replace(0, np.nan)
     ret = price.pct_change()
@@ -122,4 +138,3 @@ def build_features(df: pd.DataFrame, n_lags: int = 10) -> Tuple[pd.DataFrame, pd
 
     log.info(f"Feature matrix: {X.shape[0]} rows × {X.shape[1]} features")
     return X, y
-
