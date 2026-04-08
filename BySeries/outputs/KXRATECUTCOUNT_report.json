@@ -1,0 +1,27 @@
+{
+  "series_ticker": "KXRATECUTCOUNT",
+  "n_tickers": 4,
+  "n_days": 21,
+  "total_pnl": 0.2145,
+  "mean_daily_pnl": 0.010215,
+  "sharpe_ratio": 4.374,
+  "max_drawdown": -0.0923,
+  "win_rate": 0.714,
+  "global_r2_test": 0.0061,
+  "global_acc_test": 0.525,
+  "mean_r2_train": 0.0456,
+  "mean_acc_train": 0.594,
+  "best_val_mae": 0.04514,
+  "best_params": {
+    "boosting_type": "dart",
+    "num_leaves": 182,
+    "max_depth": 7,
+    "learning_rate": 0.028046718839341633,
+    "n_estimators": 126,
+    "min_child_samples": 100,
+    "subsample": 0.8088464433609558,
+    "colsample_bytree": 0.9976099190484614,
+    "reg_alpha": 0.06970487092227456,
+    "reg_lambda": 7.795829604235888e-06
+  }
+}
