@@ -21,9 +21,10 @@ COPY src ./src
 COPY predict_series.py ./
 COPY predict_ticker.py ./
 COPY README.md ./
+COPY app ./app
 
 # Install project dependencies
 RUN uv sync
 
 # Default command
-CMD ["uv", "run", "python", "predict_ticker.py", "--help"]
+CMD ["bash", "-c", "./app/run.sh"]
