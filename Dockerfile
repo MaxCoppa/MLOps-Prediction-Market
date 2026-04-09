@@ -22,6 +22,7 @@ COPY predict_series.py ./
 COPY predict_ticker.py ./
 COPY README.md ./
 COPY app ./app
+COPY outputs ./outputs
 
 # Install project dependencies
 RUN uv sync
