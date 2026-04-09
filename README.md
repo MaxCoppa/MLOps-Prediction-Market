@@ -71,21 +71,66 @@ All outputs are saved in the `outputs/` directory (this can be changed via CLI a
 * `ticker_name_model.txt` → trained LightGBM model
 * `ticker_name_pnl_curve.png` → PnL curve visualization
 
+Here is a clearer and more structured version of your README section, without extra styling:
 
-## Run API Local
+
+## Run API locally
+
+Start the FastAPI server:
 
 ```bash
 uv run uvicorn app.api:app
 ```
 
-THe X_example have been created from 
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+You can access the interactive documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+## Generate example input
+
+The file `app/X_example.csv` is used as a default input for testing the API.
+
+It can be generated with:
+
 ```bash
 uv run python predict_ticker.py KXGDP-26APR30-T1.5
 ```
-To test the api : 
+
+
+## Test the API locally
+
+### Using curl
+
 ```bash
 curl "http://127.0.0.1:8000/predict/example"
-{"prediction":-0.002294086224277482,"note":"This uses a default example from X_example.csv"}onyxia@vscode-python-gpu-784627-0:~/work/MLOps-Prediction-Market$ uv run test_api_local.py 
+```
+
+Example response:
+
+```json
+{
+  "prediction": -0.002294086224277482,
+  "note": "This uses a default example from X_example.csv"
+}
+```
+
+### Using the provided test script
+
+```bash
+uv run test_api_local.py
+```
+
+Example output:
+
+```text
 POST /predict
 {'prediction': -0.002294086224277482}
 
@@ -93,10 +138,54 @@ GET /predict/example
 {'prediction': -0.002294086224277482, 'note': 'This uses a default example from X_example.csv'}
 ```
 
-## API 
+## API usage
 
+* `/predict`
+
+  * Method: POST
+  * Input: JSON dictionary of features
+  * Output: prediction
+
+* `/predict/example`
+
+  * Method: GET
+  * Uses default input from `X_example.csv`
+
+## Run with Docker / Kubernetes
+
+The Docker image is available on Docker Hub:
+
+```text
+maxcoppa/application:latest
+```
+
+To test the container on a Kubernetes cluster:
+
+```bash
 kubectl run -it api-ml --env JETON_API='' --image=maxcoppa/application:latest
+```
+
+Check logs:
+
+```bash
+kubectl logs api-ml
+```
 
 
-TO Test live 
+## Deployed API
+
+Once deployed with Kubernetes (Deployment, Service, Ingress), the API is accessible at:
+
+```text
 https://kalshi-predictor.lab.sspcloud.fr/docs
+```
+
+This page provides a Swagger interface to test the API interactively.
+
+
+## Others
+
+THe X_example have been created from 
+```bash
+uv run python predict_ticker.py KXGDP-26APR30-T1.5
+```
