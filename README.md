@@ -72,3 +72,27 @@ All outputs are saved in the `outputs/` directory (this can be changed via CLI a
 * `ticker_name_pnl_curve.png` → PnL curve visualization
 
 
+## Run API Local
+
+```bash
+uv run uvicorn app.api:app
+```
+
+THe X_example have been created from 
+```bash
+uv run python predict_ticker.py KXGDP-26APR30-T1.5
+```
+To test the api : 
+```bash
+curl "http://127.0.0.1:8000/predict/example"
+{"prediction":-0.002294086224277482,"note":"This uses a default example from X_example.csv"}onyxia@vscode-python-gpu-784627-0:~/work/MLOps-Prediction-Market$ uv run test_api_local.py 
+POST /predict
+{'prediction': -0.002294086224277482}
+
+GET /predict/example
+{'prediction': -0.002294086224277482, 'note': 'This uses a default example from X_example.csv'}
+```
+
+## API 
+
+kubectl run -it api-ml --env JETON_API='' --image=maxcoppa/application:latest
