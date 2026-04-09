@@ -11,6 +11,7 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-8s  %(message)s",
     datefmt="%H:%M:%S",
 )
+logging.getLogger("mlflow").setLevel(logging.WARNING)
 
 
 def get_logger(name="KalshiPipeline"):
