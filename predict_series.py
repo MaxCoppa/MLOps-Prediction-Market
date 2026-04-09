@@ -50,6 +50,16 @@ def run_series_pipeline(
         mlflow.log_param("n_tickers", len(tickers))
 
         df_raw = fetch_data(series_ticker, tickers, window_days=window_days)
+        raw_dataset = mlflow.data.from_pandas(
+            df_raw.reset_index(),
+            name=series_ticker,
+        )
+        mlflow.log_input(raw_dataset, context="training")
+        mlflow.log_params({
+            "dataset_start": str(df_raw.index.get_level_values("ts").min().date()),
+            "dataset_end": str(df_raw.index.get_level_values("ts").max().date()),
+        })
+
         X, y = build_features(df_raw, n_lags=n_lags, min_obs=min_train)
 
         dates = X.index.get_level_values("ts").unique().sort_values()
