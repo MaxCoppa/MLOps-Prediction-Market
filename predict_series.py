@@ -2,6 +2,7 @@ import argparse
 import json
 from pathlib import Path
 import mlflow
+import lightgbm as lgb
 
 from kalshi_predictor.utils import get_logger, setup_mlflow
 from kalshi_predictor.series.data import (
@@ -101,13 +102,17 @@ def run_series_pipeline(
         mlflow.log_artifact(csv_opt_path)
         mlflow.log_artifact(csv_def_path)
         mlflow.log_artifact(json_path)
+        
 
         log.info(f"Artefacts saved to '{output_dir}/'")
+
+        final_model = lgb.LGBMRegressor(**best_params)
+        final_model.fit(X, y)
+        mlflow.lightgbm.log_model(final_model, "model")
     return report
 
 
 if __name__ == "__main__":
-    setup_mlflow("kalshi-series")
     parser = argparse.ArgumentParser(description="Kalshi Series Prediction Pipeline")
     parser.add_argument(
         "series_ticker", type=str, help="Series ticker (e.g. KXNASDAQ100U)"
@@ -127,7 +132,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
+    parser.add_argument(
+        "--experiment_name", type=str, default="kalshi-series", help="MLFlow experiment name"
+    )
+
     args = parser.parse_args()
+
+    setup_mlflow(args.experiment_name)
 
     run_series_pipeline(
         series_ticker=args.series_ticker,

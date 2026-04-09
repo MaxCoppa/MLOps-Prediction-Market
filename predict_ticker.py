@@ -81,6 +81,7 @@ def run_pipeline(
 
         final_model = lgb.LGBMRegressor(**best_params)
         final_model.fit(X, y)
+        mlflow.lightgbm.log_model(final_model, "model")
         final_model.booster_.save_model(f"{output_dir}/{safe_ticker}_model.txt")
 
         mlflow.log_metric("best_val_mae", best_val_mae)
@@ -114,7 +115,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
+    parser.add_argument(
+        "--experiment_name", type=str, default="kalshi-ticker", help="MLFlow experiment name"
+    )
     args = parser.parse_args()
+
+    setup_mlflow(args.experiment_name)
 
     run_pipeline(
         ticker=args.ticker,
