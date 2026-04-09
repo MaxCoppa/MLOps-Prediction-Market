@@ -1,6 +1,9 @@
 import argparse
 import json
 from pathlib import Path
+import joblib
+import lightgbm as lgb
+import numpy as np
 
 from kalshi_predictor.utils import get_logger
 from kalshi_predictor.series.data import (
@@ -77,6 +80,17 @@ def run_series_pipeline(
     with open(f"{output_dir}/{safe_series}_report.json", "w") as fh:
         json.dump(report, fh, indent=2)
 
+    final_model = lgb.LGBMRegressor(**best_params)
+    final_model.fit(X, y)
+
+    model_path = f"{output_dir}/{safe_series}_model.joblib"
+    joblib.dump(final_model, model_path)
+
+    saved_model = joblib.load(model_path)
+    if not ((np.abs(saved_model.predict(X) - final_model.predict(X)) < 1e-6).all()):
+        raise ValueError("The model has been corrupted")
+
+    log.info(f"Model saved to {model_path}")
     log.info(f"Artefacts saved to '{output_dir}/'")
     return report
 
