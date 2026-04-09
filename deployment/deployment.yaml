@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kalshi-predictor-deployment
+  labels:
+    app: kalshi-predictor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kalshi-predictor
+  template:
+    metadata:
+      labels:
+        app: kalshi-predictor
+    spec:
+      containers:
+      - name: kalshi-predictor
+        image: maxcoppa/application:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: JETON_API
+          valueFrom:
+            secretKeyRef:
+              name: api-jeton
+              key: JETON_API

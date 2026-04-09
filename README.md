@@ -96,3 +96,7 @@ GET /predict/example
 ## API 
 
 kubectl run -it api-ml --env JETON_API='' --image=maxcoppa/application:latest
+
+
+TO Test live 
+https://kalshi-predictor.lab.sspcloud.fr/docs

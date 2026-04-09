@@ -15,4 +15,3 @@ print(response.json())
 response = requests.get("http://127.0.0.1:8000/predict/example")
 print("\nGET /predict/example")
 print(response.json())
-
