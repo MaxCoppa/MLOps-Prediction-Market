@@ -1,8 +1,27 @@
 from fastapi import FastAPI
-import joblib
 import pandas as pd
+import mlflow
+import logging
 
-model = joblib.load("outputs/KXGDP_model.joblib")
+
+logging.basicConfig(
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M",
+    level=logging.DEBUG,
+    handlers=[logging.FileHandler("api.log"), logging.StreamHandler()],
+)
+
+# Preload model -------------------
+logging.info(
+    "Getting model from MLFlow"
+)
+
+# Load the model from the Model Registry
+model_name = "model_KXCPI"
+
+model_uri = f"models:/{model_name}@production"
+model = mlflow.sklearn.load_model(model_uri)
 
 # Default input from CSV (first row)
 DEFAULT_X = pd.read_csv("app/X_example.csv").iloc[-1].to_dict()
@@ -18,7 +37,7 @@ def show_welcome_page():
     return {
         "Message": "Kalshi prediction API",
         "Model_name": "KXGDP ML",
-        "Model_version": "0.1",
+        "Model_version": "0.3",
     }
 
 
