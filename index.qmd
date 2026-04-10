@@ -1,0 +1,30 @@
+---
+title: "Test our prediction API"
+format: html
+echo: false
+---
+
+We can query our deployed model through the API.
+
+## Example prediction
+
+```{ojs}
+apiRoot = "https://kalshi-predictor.lab.sspcloud.fr"
+predictionUrl = `${apiRoot}/predict/example`
+```
+
+```{ojs}
+d3.json(predictionUrl)
+```
+
+## Try it yourself
+
+```bash
+curl https://kalshi-predictor.lab.sspcloud.fr/predict/example
+```
+
+## API documentation
+
+[https://kalshi-predictor.lab.sspcloud.fr/docs](https://kalshi-predictor.lab.sspcloud.fr/docs)
+
+

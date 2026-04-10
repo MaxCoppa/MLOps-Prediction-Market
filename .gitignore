@@ -3,6 +3,11 @@
 *.json
 *.png
 
+/.quarto/
+*.html
+*_files
+_site/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
