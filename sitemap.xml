@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://MaxCoppa.github.io/MLOps-Prediction-Market/toy_mlflow.html</loc>
-    <lastmod>2026-04-10T13:13:20.548Z</lastmod>
-  </url>
-  <url>
-    <loc>https://MaxCoppa.github.io/MLOps-Prediction-Market/README_v0.html</loc>
-    <lastmod>2026-04-10T13:13:20.546Z</lastmod>
-  </url>
-  <url>
     <loc>https://MaxCoppa.github.io/MLOps-Prediction-Market/index.html</loc>
-    <lastmod>2026-04-10T13:13:20.546Z</lastmod>
+    <lastmod>2026-04-10T13:44:28.943Z</lastmod>
+  </url>
+  <url>
+    <loc>https://MaxCoppa.github.io/MLOps-Prediction-Market/exp/README_v0.html</loc>
+    <lastmod>2026-04-10T13:44:28.943Z</lastmod>
+  </url>
+  <url>
+    <loc>https://MaxCoppa.github.io/MLOps-Prediction-Market/exp/toy_mlflow.html</loc>
+    <lastmod>2026-04-10T13:44:28.943Z</lastmod>
   </url>
 </urlset>
