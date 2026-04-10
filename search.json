@@ -1,0 +1,86 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Test our prediction API",
+    "section": "",
+    "text": "We can query our deployed model through the API."
+  },
+  {
+    "objectID": "index.html#example-prediction",
+    "href": "index.html#example-prediction",
+    "title": "Test our prediction API",
+    "section": "Example prediction",
+    "text": "Example prediction\n\napiRoot = \"https://kalshi-predictor.lab.sspcloud.fr\"\npredictionUrl = `${apiRoot}/predict/example`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nd3.json(predictionUrl)"
+  },
+  {
+    "objectID": "index.html#try-it-yourself",
+    "href": "index.html#try-it-yourself",
+    "title": "Test our prediction API",
+    "section": "Try it yourself",
+    "text": "Try it yourself\ncurl https://kalshi-predictor.lab.sspcloud.fr/predict/example"
+  },
+  {
+    "objectID": "index.html#api-documentation",
+    "href": "index.html#api-documentation",
+    "title": "Test our prediction API",
+    "section": "API documentation",
+    "text": "API documentation\nhttps://kalshi-predictor.lab.sspcloud.fr/docs"
+  },
+  {
+    "objectID": "README_v0.html",
+    "href": "README_v0.html",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "Train and evaluate a machine learning pipeline to predict Kalshi prediction-market price movements using the Kalshi Elections Trade API v2.\nThis repo includes: - A small Kalshi API client (series/markets/orderbook/candlesticks/trades) - Time-series construction (daily prices + daily traded value) - Feature engineering for ML (lagged returns + lagged volume) - Notebooks and scripts to run analysis / experiments\n\n\n\nRequires Python 3.9+.\nInstall dependencies with uv:\nuv sync\n\n\n\n\nRun the main pipeline / analysis:\nuv python run main.py\n\n\n\n\n\nget_market_data_demo.ipynb: explore series/markets/orderbook and download data\nmarket_prediction.ipynb: feature engineering + modeling experiments\n\n\n\n\n\n\nmarket_data/\n\nmarkets.py — KalshiClient, KalshiAnalyzer (API + time series)\nfeature_engineering.py — KalshiFeatureEngineer (ML dataset builder)\nutils.py — helpers (if any)\n__init__.py\n\nmain.py — entrypoint to run analysis / pipeline\nexp_kalshi_api.py — experiment / sandbox script (optional usage)\nget_market_data_demo.ipynb — demo: pulling market data\nmarket_prediction.ipynb — modeling experiments\ndata/ — local data artifacts (if used)\npyproject.toml, uv.lock, requirements.txt — dependencies / env\n\n\n\n\n\nBase URL:\nhttps://api.elections.kalshi.com/trade-api/v2\nEndpoints mapped to code:\n\nSeries metadata\n\nGET /series/{series_ticker}\nUsed by: KalshiClient.get_series_information()\n\nMarkets in a series\n\nGET /markets?series_ticker={series_ticker}&status={status}\nUsed by: KalshiClient.get_markets_data()\n\nOrderbook\n\nGET /markets/{market_ticker}/orderbook\nUsed by: KalshiAnalyzer.get_orderbook_data()\n\nCandlesticks (historical prices)\n\nGET /series/{series}/markets/{market}/candlesticks?start_ts&end_ts&period_interval\nUsed by: KalshiAnalyzer.get_price_data()\n\nTrades (historical executions, paginated)\n\nGET /markets/trades?ticker&min_ts&max_ts&limit&cursor\nUsed by: KalshiAnalyzer.get_trades_data()\n\n\n\n\n\n\n\n\nKalshiAnalyzer.get_price_data() converts candlesticks into:\n\npd.Series\nindex: daily UTC date\nvalue: mean price in cents (mean_dollars * 100)\nmissing dates forward-filled (ffill) after sorting\n\n\n\n\nKalshiAnalyzer.get_trades_data() downloads all trades (cursor pagination) and computes traded value per trade:\n\nif taker_side == \"yes\" → count × yes_price\nelse → count × no_price\n\nThen aggregates to:\n\npd.DataFrame\nindex: daily UTC date\ncolumns: yes, no (daily traded value per taker side)\n\n\n\n\n\n\nKalshiFeatureEngineer (inherits from KalshiAnalyzer) builds a supervised ML dataset.\n\n\nFrom daily price returns and YES-side traded value:\n\nCompute daily return:\n\nRET[t] = pct_change(price)[t]\n\nDefine volume proxy:\n\nVOLUME[t] = daily YES traded value\n\nCreate a 10-day lag window:\n\nRET_1 ... RET_10\nVOLUME_1 ... VOLUME_10\n\n\nFinal X columns: - TS (numeric time identifier) - RET_1..RET_10 - VOLUME_1..VOLUME_10\n\n\n\nBinary label:\n\ny[t] = 1 if RET[t] &gt; 0\ny[t] = 0 otherwise\n\n\n\n\nsplit_data(train_size=0.8) uses:\n\nchronological split (shuffle=False)\nreturns X_train, X_val, y_train, y_val"
+  },
+  {
+    "objectID": "README_v0.html#setup",
+    "href": "README_v0.html#setup",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "Requires Python 3.9+.\nInstall dependencies with uv:\nuv sync"
+  },
+  {
+    "objectID": "README_v0.html#run",
+    "href": "README_v0.html#run",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "Run the main pipeline / analysis:\nuv python run main.py"
+  },
+  {
+    "objectID": "README_v0.html#notebooks",
+    "href": "README_v0.html#notebooks",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "get_market_data_demo.ipynb: explore series/markets/orderbook and download data\nmarket_prediction.ipynb: feature engineering + modeling experiments"
+  },
+  {
+    "objectID": "README_v0.html#project-layout",
+    "href": "README_v0.html#project-layout",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "market_data/\n\nmarkets.py — KalshiClient, KalshiAnalyzer (API + time series)\nfeature_engineering.py — KalshiFeatureEngineer (ML dataset builder)\nutils.py — helpers (if any)\n__init__.py\n\nmain.py — entrypoint to run analysis / pipeline\nexp_kalshi_api.py — experiment / sandbox script (optional usage)\nget_market_data_demo.ipynb — demo: pulling market data\nmarket_prediction.ipynb — modeling experiments\ndata/ — local data artifacts (if used)\npyproject.toml, uv.lock, requirements.txt — dependencies / env"
+  },
+  {
+    "objectID": "README_v0.html#kalshi-api-endpoints-used",
+    "href": "README_v0.html#kalshi-api-endpoints-used",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "Base URL:\nhttps://api.elections.kalshi.com/trade-api/v2\nEndpoints mapped to code:\n\nSeries metadata\n\nGET /series/{series_ticker}\nUsed by: KalshiClient.get_series_information()\n\nMarkets in a series\n\nGET /markets?series_ticker={series_ticker}&status={status}\nUsed by: KalshiClient.get_markets_data()\n\nOrderbook\n\nGET /markets/{market_ticker}/orderbook\nUsed by: KalshiAnalyzer.get_orderbook_data()\n\nCandlesticks (historical prices)\n\nGET /series/{series}/markets/{market}/candlesticks?start_ts&end_ts&period_interval\nUsed by: KalshiAnalyzer.get_price_data()\n\nTrades (historical executions, paginated)\n\nGET /markets/trades?ticker&min_ts&max_ts&limit&cursor\nUsed by: KalshiAnalyzer.get_trades_data()"
+  },
+  {
+    "objectID": "README_v0.html#data-produced-by-the-analyzer",
+    "href": "README_v0.html#data-produced-by-the-analyzer",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "KalshiAnalyzer.get_price_data() converts candlesticks into:\n\npd.Series\nindex: daily UTC date\nvalue: mean price in cents (mean_dollars * 100)\nmissing dates forward-filled (ffill) after sorting\n\n\n\n\nKalshiAnalyzer.get_trades_data() downloads all trades (cursor pagination) and computes traded value per trade:\n\nif taker_side == \"yes\" → count × yes_price\nelse → count × no_price\n\nThen aggregates to:\n\npd.DataFrame\nindex: daily UTC date\ncolumns: yes, no (daily traded value per taker side)"
+  },
+  {
+    "objectID": "README_v0.html#feature-engineering-for-prediction",
+    "href": "README_v0.html#feature-engineering-for-prediction",
+    "title": "MLOps-Prediction-Market",
+    "section": "",
+    "text": "KalshiFeatureEngineer (inherits from KalshiAnalyzer) builds a supervised ML dataset.\n\n\nFrom daily price returns and YES-side traded value:\n\nCompute daily return:\n\nRET[t] = pct_change(price)[t]\n\nDefine volume proxy:\n\nVOLUME[t] = daily YES traded value\n\nCreate a 10-day lag window:\n\nRET_1 ... RET_10\nVOLUME_1 ... VOLUME_10\n\n\nFinal X columns: - TS (numeric time identifier) - RET_1..RET_10 - VOLUME_1..VOLUME_10\n\n\n\nBinary label:\n\ny[t] = 1 if RET[t] &gt; 0\ny[t] = 0 otherwise\n\n\n\n\nsplit_data(train_size=0.8) uses:\n\nchronological split (shuffle=False)\nreturns X_train, X_val, y_train, y_val"
+  }
+]

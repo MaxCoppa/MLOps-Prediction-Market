@@ -1,0 +1,1 @@
+Sitemap: https://MaxCoppa.github.io/MLOps-Prediction-Market/sitemap.xml
