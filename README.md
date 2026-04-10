@@ -71,121 +71,79 @@ All outputs are saved in the `outputs/` directory (this can be changed via CLI a
 * `ticker_name_model.txt` → trained LightGBM model
 * `ticker_name_pnl_curve.png` → PnL curve visualization
 
-Here is a clearer and more structured version of your README section, without extra styling:
+## Website Creation
 
+### Local API Access
 
-## Run API locally
-
-Start the FastAPI server:
+Start the API locally:
 
 ```bash
 uv run uvicorn app.api:app
+````
+
+API:
+
 ```
-
-The API will be available at:
-
-```text
 http://127.0.0.1:8000
 ```
 
-You can access the interactive documentation at:
+Docs:
 
-```text
+```
 http://127.0.0.1:8000/docs
 ```
 
-## Generate example input
-
-The file `app/X_example.csv` is used as a default input for testing the API.
-
-It can be generated with:
-
-```bash
-uv run python predict_ticker.py KXGDP-26APR30-T1.5
-```
-
-
-## Test the API locally
-
-### Using curl
+Example prediction:
 
 ```bash
 curl "http://127.0.0.1:8000/predict/example"
 ```
 
-Example response:
-
-```json
-{
-  "prediction": -0.002294086224277482,
-  "note": "This uses a default example from X_example.csv"
-}
-```
-
-### Using the provided test script
+Or run tests:
 
 ```bash
 uv run test_api_local.py
 ```
 
-Example output:
+### Automated Deployment
 
-```text
-POST /predict
-{'prediction': -0.002294086224277482}
+Deployment is handled via a separate GitOps repository:
 
-GET /predict/example
-{'prediction': -0.002294086224277482, 'note': 'This uses a default example from X_example.csv'}
-```
+[https://github.com/MaxCoppa/kalshi-predictor-deployment](https://github.com/MaxCoppa/kalshi-predictor-deployment)
 
-## API usage
+Changes to Kubernetes manifests in this repository are automatically applied in production.
 
-* `/predict`
 
-  * Method: POST
-  * Input: JSON dictionary of features
-  * Output: prediction
+### Update Production Version
 
-* `/predict/example`
-
-  * Method: GET
-  * Uses default input from `X_example.csv`
-
-## Run with Docker / Kubernetes
-
-The Docker image is available on Docker Hub:
-
-```text
-maxcoppa/application:latest
-```
-
-To test the container on a Kubernetes cluster:
+To release a new version in production, first build and push a new Docker image:
 
 ```bash
-kubectl run -it api-ml --env JETON_API='' --image=maxcoppa/application:latest
+docker build -t maxcoppa/application:v0.0.x .
+docker push maxcoppa/application:v0.0.x
 ```
 
-Check logs:
+Then update the image tag in the deployment repository Kubernetes manifest:
 
-```bash
-kubectl logs api-ml
+```yaml
+image: maxcoppa/application:v0.0.x
 ```
 
-
-## Deployed API
-
-Once deployed with Kubernetes (Deployment, Service, Ingress), the API is accessible at:
-
-```text
-https://kalshi-predictor.lab.sspcloud.fr/docs
-```
-
-This page provides a Swagger interface to test the API interactively.
+After commit and push, Argo CD automatically redeploys the application.
 
 
-## Others
+### Website
 
-THe X_example have been created from 
-```bash
-uv run python predict_ticker.py KXGDP-26APR30-T1.5
-```
+The project includes a Quarto website deployed with GitHub Pages:
+
+[https://maxcoppa.github.io/MLOps-Prediction-Market/](https://maxcoppa.github.io/MLOps-Prediction-Market/)
+
+It provides:
+
+* API usage examples (same as `predict/example`)
+* Live prediction demo
+* Link to API documentation
+
+
+
+
