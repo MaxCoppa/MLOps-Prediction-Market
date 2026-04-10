@@ -146,6 +146,11 @@ It provides:
 * Live prediction demo
 * Link to API documentation
 
+### TO add
 
+```bash
+git tag -a v0.0.x -m "new version"
+git push --tags
+```
 
 
