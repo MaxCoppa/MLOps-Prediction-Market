@@ -1,11 +1,10 @@
 import argparse
 import json
 from pathlib import Path
-import joblib
+import mlflow
 import lightgbm as lgb
-import numpy as np
 
-from kalshi_predictor.utils import get_logger
+from kalshi_predictor.utils import get_logger, setup_mlflow
 from kalshi_predictor.series.data import (
     fetch_tickers,
     fetch_data,
@@ -31,67 +30,95 @@ def run_series_pipeline(
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     log.info(f"{'='*60}\n  Kalshi Series Pipeline — {series_ticker}\n{'='*60}")
 
-    tickers = fetch_tickers(series_ticker)
-    if not tickers:
-        raise ValueError(f"No tickers found for {series_ticker}")
-
-    df_raw = fetch_data(series_ticker, tickers, window_days=window_days)
-    X, y = build_features(df_raw, n_lags=n_lags, min_obs=min_train)
-
-    dates = X.index.get_level_values("ts").unique().sort_values()
-    if len(dates) < min_train + 10:
-        raise ValueError(
-            f"Not enough dates after feature engineering ({len(dates)}). Increase window_days."
+    with mlflow.start_run(run_name=series_ticker):
+        mlflow.log_params(
+            {
+                "series_ticker": series_ticker,
+                "window_days": window_days,
+                "n_lags": n_lags,
+                "n_optuna_trials": n_optuna_trials,
+                "val_ratio": val_ratio,
+                "min_train": min_train,
+                "refit_freq": refit_freq,
+            }
         )
 
-    best_params, best_val_mae = bayesian_optimisation(
-        X, y, n_trials=n_optuna_trials, val_ratio=val_ratio
-    )
+        tickers = fetch_tickers(series_ticker)
+        if not tickers:
+            raise ValueError(f"No tickers found for {series_ticker}")
 
-    split_idx = int(len(dates) * (1 - val_ratio))
-    val_split_date = dates[split_idx]
+        mlflow.log_param("n_tickers", len(tickers))
 
-    res_opt, met_opt, res_def, met_def = run_backtest(
-        X, y, best_params=best_params, min_train=min_train, refit_freq=refit_freq
-    )
+        df_raw = fetch_data(series_ticker, tickers, window_days=window_days)
+        raw_dataset = mlflow.data.from_pandas(
+            df_raw.reset_index(),
+            name=series_ticker,
+        )
+        mlflow.log_input(raw_dataset, context="training")
+        mlflow.log_params({
+            "dataset_start": str(df_raw.index.get_level_values("ts").min().date()),
+            "dataset_end": str(df_raw.index.get_level_values("ts").max().date()),
+        })
 
-    report = performance_report(
-        results=res_opt,
-        metrics=met_opt,
-        series_ticker=series_ticker,
-        output_dir=output_dir,
-        val_split_date=val_split_date,
-        results_default=res_def,
-        metrics_default=met_def,
-    )
+        X, y = build_features(df_raw, n_lags=n_lags, min_obs=min_train)
 
-    report["best_val_mae"] = round(best_val_mae, 6)
-    report["best_params"] = {
-        k: v
-        for k, v in best_params.items()
-        if k not in ("objective", "metric", "verbosity")
-    }
+        dates = X.index.get_level_values("ts").unique().sort_values()
+        if len(dates) < min_train + 10:
+            raise ValueError(
+                f"Not enough dates after feature engineering ({len(dates)}). Increase window_days."
+            )
 
-    safe_series = series_ticker.replace("/", "_")
+        best_params, best_val_mae = bayesian_optimisation(
+            X, y, n_trials=n_optuna_trials, val_ratio=val_ratio
+        )
 
-    res_opt.to_csv(f"{output_dir}/{safe_series}_backtest_results_opt.csv")
-    res_def.to_csv(f"{output_dir}/{safe_series}_backtest_results_def.csv")
+        split_idx = int(len(dates) * (1 - val_ratio))
+        val_split_date = dates[split_idx]
 
-    with open(f"{output_dir}/{safe_series}_report.json", "w") as fh:
-        json.dump(report, fh, indent=2)
+        res_opt, met_opt, res_def, met_def = run_backtest(
+            X, y, best_params=best_params, min_train=min_train, refit_freq=refit_freq
+        )
 
-    final_model = lgb.LGBMRegressor(**best_params)
-    final_model.fit(X, y)
+        report = performance_report(
+            results=res_opt,
+            metrics=met_opt,
+            series_ticker=series_ticker,
+            output_dir=output_dir,
+            val_split_date=val_split_date,
+            results_default=res_def,
+            metrics_default=met_def,
+        )
 
-    model_path = f"{output_dir}/{safe_series}_model.joblib"
-    joblib.dump(final_model, model_path)
+        report["best_val_mae"] = round(best_val_mae, 6)
+        report["best_params"] = {
+            k: v
+            for k, v in best_params.items()
+            if k not in ("objective", "metric", "verbosity")
+        }
 
-    saved_model = joblib.load(model_path)
-    if not ((np.abs(saved_model.predict(X) - final_model.predict(X)) < 1e-6).all()):
-        raise ValueError("The model has been corrupted")
+        safe_series = series_ticker.replace("/", "_")
 
-    log.info(f"Model saved to {model_path}")
-    log.info(f"Artefacts saved to '{output_dir}/'")
+        csv_opt_path = f"{output_dir}/{safe_series}_backtest_results_opt.csv"
+        csv_def_path = f"{output_dir}/{safe_series}_backtest_results_def.csv"
+        res_opt.to_csv(csv_opt_path)
+        res_def.to_csv(csv_def_path)
+
+        json_path = f"{output_dir}/{safe_series}_report.json"
+        with open(json_path, "w") as fh:
+            json.dump(report, fh, indent=2)
+
+        mlflow.log_metric("best_val_mse", best_val_mae)
+        mlflow.log_params({k: v for k, v in report.get("best_params", {}).items()})
+        mlflow.log_artifact(csv_opt_path)
+        mlflow.log_artifact(csv_def_path)
+        mlflow.log_artifact(json_path)
+        
+
+        log.info(f"Artefacts saved to '{output_dir}/'")
+
+        final_model = lgb.LGBMRegressor(**best_params)
+        final_model.fit(X, y)
+        mlflow.lightgbm.log_model(final_model, "model")
     return report
 
 
@@ -115,7 +142,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
+    parser.add_argument(
+        "--experiment_name", type=str, default="kalshi-series", help="MLFlow experiment name"
+    )
+
     args = parser.parse_args()
+
+    setup_mlflow(args.experiment_name)
 
     run_series_pipeline(
         series_ticker=args.series_ticker,

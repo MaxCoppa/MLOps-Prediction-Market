@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 import joblib
 import lightgbm as lgb
-import numpy as np
+import mlflow
 
-from kalshi_predictor.utils import get_logger
+from kalshi_predictor.utils import get_logger, setup_mlflow
 from kalshi_predictor.ticker.data import fetch_data, build_features
 from kalshi_predictor.ticker.model import bayesian_optimisation
 from kalshi_predictor.ticker.backtest import run_backtest, performance_report
@@ -26,53 +26,76 @@ def run_pipeline(
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     log.info(f"{'='*60}\n  Kalshi Pipeline — ticker: {ticker}\n{'='*60}")
 
-    df = fetch_data(ticker, window_days=window_days)
-    X, y = build_features(df, n_lags=n_lags)
-
-    if len(X) < min_train + 10:
-        raise ValueError(
-            f"Not enough data after feature engineering ({len(X)} rows). Increase window_days."
+    with mlflow.start_run(run_name=ticker):
+        mlflow.log_params(
+            {
+                "ticker": ticker,
+                "window_days": window_days,
+                "n_lags": n_lags,
+                "n_optuna_trials": n_optuna_trials,
+                "val_ratio": val_ratio,
+                "min_train": min_train,
+                "refit_freq": refit_freq,
+            }
         )
 
-    best_params, best_val_mae = bayesian_optimisation(
-        X, y, n_trials=n_optuna_trials, val_ratio=val_ratio
-    )
-    results, metrics = run_backtest(
-        X, y, best_params=best_params, min_train=min_train, refit_freq=refit_freq
-    )
+        df = fetch_data(ticker, window_days=window_days)
+        X, y = build_features(df, n_lags=n_lags)
 
-    split_idx = int(len(X) * (1 - val_ratio))
-    val_split_date = X.index[split_idx]
+        if len(X) < min_train + 10:
+            raise ValueError(
+                f"Not enough data after feature engineering ({len(X)} rows). Increase window_days."
+            )
 
-    report = performance_report(
-        results, metrics, ticker, output_dir=output_dir, val_split_date=val_split_date
-    )
-    report["best_val_mae"] = round(best_val_mae, 6)
-    report["best_params"] = {
-        k: v
-        for k, v in best_params.items()
-        if k not in ("objective", "metric", "verbosity", "n_jobs", "random_state")
-    }
+        best_params, best_val_mae = bayesian_optimisation(
+            X, y, n_trials=n_optuna_trials, val_ratio=val_ratio
+        )
+        results, metrics = run_backtest(
+            X, y, best_params=best_params, min_train=min_train, refit_freq=refit_freq
+        )
 
-    safe_ticker = ticker.replace("/", "_")
-    results.to_csv(f"{output_dir}/{safe_ticker}_backtest_results.csv")
+        split_idx = int(len(X) * (1 - val_ratio))
+        val_split_date = X.index[split_idx]
 
-    with open(f"{output_dir}/{safe_ticker}_report.json", "w") as fh:
-        json.dump(report, fh, indent=2)
+        report = performance_report(
+            results,
+            metrics,
+            ticker,
+            output_dir=output_dir,
+            val_split_date=val_split_date,
+        )
+        report["best_val_mae"] = round(best_val_mae, 6)
+        report["best_params"] = {
+            k: v
+            for k, v in best_params.items()
+            if k not in ("objective", "metric", "verbosity", "n_jobs", "random_state")
+        }
 
-    final_model = lgb.LGBMRegressor(**best_params)
-    final_model.fit(X, y)
-    model_path = f"{output_dir}/{safe_ticker}_model.joblib"
-    joblib.dump(final_model, model_path)
+        safe_ticker = ticker.replace("/", "_")
+        csv_path = f"{output_dir}/{safe_ticker}_backtest_results.csv"
+        results.to_csv(csv_path)
 
-    saved_model = joblib.load(model_path)
-    if not ((np.abs(saved_model.predict(X) - final_model.predict(X)) < 1e-6).all()):
-        raise ValueError("The model has been corrupted")
-    log.info(f"Artefacts saved to '{output_dir}/'")
+        json_path = f"{output_dir}/{safe_ticker}_report.json"
+        with open(json_path, "w") as fh:
+            json.dump(report, fh, indent=2)
+
+        final_model = lgb.LGBMRegressor(**best_params)
+        final_model.fit(X, y)
+        mlflow.lightgbm.log_model(final_model, "model")
+        final_model.booster_.save_model(f"{output_dir}/{safe_ticker}_model.txt")
+
+        mlflow.log_metric("best_val_mae", best_val_mae)
+        mlflow.log_params({k: v for k, v in report.get("best_params", {}).items()})
+        mlflow.log_artifact(csv_path)
+        mlflow.log_artifact(json_path)
+        mlflow.lightgbm.log_model(final_model, "model")
+
+        log.info(f"Artefacts saved to '{output_dir}/'")
     return report
 
 
 if __name__ == "__main__":
+    setup_mlflow("kalshi-ticker")
     parser = argparse.ArgumentParser(description="Kalshi Prediction Market Pipeline")
     parser.add_argument(
         "ticker", type=str, help="Contract ticker (e.g. KXBTCD-25MAR14-B94999)"
@@ -92,7 +115,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
+    parser.add_argument(
+        "--experiment_name", type=str, default="kalshi-ticker", help="MLFlow experiment name"
+    )
     args = parser.parse_args()
+
+    setup_mlflow(args.experiment_name)
 
     run_pipeline(
         ticker=args.ticker,

@@ -1,0 +1,42 @@
+name: Train Kalshi Models
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [add_mlflow]
+
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        series_ticker: [KXCPI, KXFED, KXPAYROLLS]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Train model — ${{ matrix.series_ticker }}
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+        run: |
+          uv run python predict_series.py ${{ matrix.series_ticker }} \
+            --days 365 \
+            --lags 10 \
+            --trials 50 \
+            --experiment_name kalshi-series-ci

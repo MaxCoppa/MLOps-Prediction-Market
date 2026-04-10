@@ -10,6 +10,12 @@ mlruns/*
 *_files
 _site/
 
+/.quarto/
+*.html
+*_files
+_site/
+*.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

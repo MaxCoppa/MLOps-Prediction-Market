@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import matplotlib.pyplot as plt
+import mlflow
 from sklearn.metrics import accuracy_score, r2_score
 from tqdm import tqdm
 from typing import Tuple
@@ -205,4 +206,11 @@ def performance_report(
     plt.close()
 
     log.info(f"PnL plot and metrics table saved to {plot_path}")
+
+    if mlflow.active_run():
+        mlflow.log_metrics(
+            {k: v for k, v in report.items() if isinstance(v, (int, float))}
+        )
+        mlflow.log_artifact(plot_path)
+
     return report
