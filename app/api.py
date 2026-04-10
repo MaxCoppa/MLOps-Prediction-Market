@@ -21,7 +21,7 @@ logging.info(
 model_name = "model_KXCPI"
 
 model_uri = f"models:/{model_name}@production"
-model = mlflow.sklearn.load_model(model_uri)
+model = mlflow.lightgbm.load_model(model_uri)
 
 # Default input from CSV (first row)
 DEFAULT_X = pd.read_csv("app/X_example.csv").iloc[-1].to_dict()
