@@ -55,10 +55,12 @@ def run_series_pipeline(
             name=series_ticker,
         )
         mlflow.log_input(raw_dataset, context="training")
-        mlflow.log_params({
-            "dataset_start": str(df_raw.index.get_level_values("ts").min().date()),
-            "dataset_end": str(df_raw.index.get_level_values("ts").max().date()),
-        })
+        mlflow.log_params(
+            {
+                "dataset_start": str(df_raw.index.get_level_values("ts").min().date()),
+                "dataset_end": str(df_raw.index.get_level_values("ts").max().date()),
+            }
+        )
 
         X, y = build_features(df_raw, n_lags=n_lags, min_obs=min_train)
 
@@ -112,7 +114,6 @@ def run_series_pipeline(
         mlflow.log_artifact(csv_opt_path)
         mlflow.log_artifact(csv_def_path)
         mlflow.log_artifact(json_path)
-        
 
         log.info(f"Artefacts saved to '{output_dir}/'")
 
@@ -143,7 +144,10 @@ if __name__ == "__main__":
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
     parser.add_argument(
-        "--experiment_name", type=str, default="kalshi-series", help="MLFlow experiment name"
+        "--experiment_name",
+        type=str,
+        default="kalshi-series",
+        help="MLFlow experiment name",
     )
 
     args = parser.parse_args()

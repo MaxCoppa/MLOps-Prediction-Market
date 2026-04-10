@@ -1,7 +1,6 @@
 import argparse
 import json
 from pathlib import Path
-import joblib
 import lightgbm as lgb
 import mlflow
 
@@ -116,7 +115,10 @@ if __name__ == "__main__":
         "--output-dir", type=str, default="outputs", help="Output directory"
     )
     parser.add_argument(
-        "--experiment_name", type=str, default="kalshi-ticker", help="MLFlow experiment name"
+        "--experiment_name",
+        type=str,
+        default="kalshi-ticker",
+        help="MLFlow experiment name",
     )
     args = parser.parse_args()
 

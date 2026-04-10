@@ -1,0 +1,42 @@
+2026-04-10 13:04 - INFO - Getting model from MLFlow
+2026-04-10 13:04 - DEBUG - Starting new HTTPS connection (1): user-mcoppa06-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:04 - DEBUG - https://user-mcoppa06-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/alias?name=model_KXCPI&alias=production HTTP/1.1" 404 104
+2026-04-10 13:09 - INFO - Getting model from MLFlow
+2026-04-10 13:09 - DEBUG - Starting new HTTPS connection (1): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:09 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/alias?name=model_KXCPI&alias=production HTTP/1.1" 401 137
+2026-04-10 13:11 - INFO - Getting model from MLFlow
+2026-04-10 13:11 - DEBUG - Starting new HTTPS connection (1): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/alias?name=model_KXCPI&alias=production HTTP/1.1" 200 408
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/get?name=model_KXCPI HTTP/1.1" 200 662
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/model-versions/get-download-uri?name=model_KXCPI&version=1 HTTP/1.1" 200 95
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts?path=2%2Fmodels%2Fm-02ebe1441e1f4b1fae349f898a440adc%2Fartifacts HTTP/1.1" 200 465
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts?path=2%2Fmodels%2Fm-02ebe1441e1f4b1fae349f898a440adc%2Fartifacts HTTP/1.1" 200 465
+2026-04-10 13:11 - DEBUG - Starting new HTTPS connection (2): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:11 - DEBUG - Starting new HTTPS connection (3): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:11 - DEBUG - Starting new HTTPS connection (4): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:11 - DEBUG - Starting new HTTPS connection (5): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/model.pkl HTTP/1.1" 200 None
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/MLmodel HTTP/1.1" 200 None
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/conda.yaml HTTP/1.1" 200 None
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/python_env.yaml HTTP/1.1" 200 None
+2026-04-10 13:11 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/requirements.txt HTTP/1.1" 200 None
+2026-04-10 13:12 - INFO - Getting model from MLFlow
+2026-04-10 13:12 - DEBUG - Starting new HTTPS connection (1): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/alias?name=model_KXCPI&alias=production HTTP/1.1" 200 408
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/registered-models/get?name=model_KXCPI HTTP/1.1" 200 662
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow/model-versions/get-download-uri?name=model_KXCPI&version=1 HTTP/1.1" 200 95
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts?path=2%2Fmodels%2Fm-02ebe1441e1f4b1fae349f898a440adc%2Fartifacts HTTP/1.1" 200 465
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts?path=2%2Fmodels%2Fm-02ebe1441e1f4b1fae349f898a440adc%2Fartifacts HTTP/1.1" 200 465
+2026-04-10 13:12 - DEBUG - Starting new HTTPS connection (2): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:12 - DEBUG - Starting new HTTPS connection (3): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:12 - DEBUG - Starting new HTTPS connection (4): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:12 - DEBUG - Starting new HTTPS connection (5): user-avautrin-mlflow.user.lab.sspcloud.fr:443
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/MLmodel HTTP/1.1" 200 None
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/model.pkl HTTP/1.1" 200 None
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/python_env.yaml HTTP/1.1" 200 None
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/requirements.txt HTTP/1.1" 200 None
+2026-04-10 13:12 - DEBUG - https://user-avautrin-mlflow.user.lab.sspcloud.fr:443 "GET /api/2.0/mlflow-artifacts/artifacts/2/models/m-02ebe1441e1f4b1fae349f898a440adc/artifacts/conda.yaml HTTP/1.1" 200 None
+2026-04-10 13:12 - DEBUG - matplotlib data path: /home/onyxia/work/MLOps-Prediction-Market/.venv/lib/python3.13/site-packages/matplotlib/mpl-data
+2026-04-10 13:12 - DEBUG - CONFIGDIR=/home/onyxia/.config/matplotlib
+2026-04-10 13:12 - DEBUG - interactive is False
+2026-04-10 13:12 - DEBUG - platform is linux

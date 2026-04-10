@@ -3,7 +3,6 @@ import pandas as pd
 import mlflow
 import logging
 
-
 logging.basicConfig(
     format="{asctime} - {levelname} - {message}",
     style="{",
@@ -13,9 +12,7 @@ logging.basicConfig(
 )
 
 # Preload model -------------------
-logging.info(
-    "Getting model from MLFlow"
-)
+logging.info("Getting model from MLFlow")
 
 # Load the model from the Model Registry
 model_name = "model_KXCPI"
