@@ -19,7 +19,6 @@ COPY uv.lock* ./
 # Copy source code
 COPY src ./src
 COPY predict_series.py ./
-COPY predict_ticker.py ./
 COPY README.md ./
 COPY app ./app
 
