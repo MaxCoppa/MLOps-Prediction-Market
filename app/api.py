@@ -15,7 +15,7 @@ logging.basicConfig(
 logging.info("Getting model from MLFlow")
 
 # Load the model from the Model Registry
-model_name = "model_KXCPI"
+model_name = "model_KXGDP"
 
 model_uri = f"models:/{model_name}@production"
 model = mlflow.lightgbm.load_model(model_uri)
