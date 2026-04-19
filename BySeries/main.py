@@ -2,11 +2,13 @@ import argparse
 import json
 from pathlib import Path
 import lightgbm as lgb
+import os
 
 from logger import get_logger
 from data import fetch_series_tickers, fetch_series_data, build_panel_features
 from model import bayesian_optimisation
 from backtest import run_backtest, performance_report
+from pnl_computation import compute_yesterday_pnl
 
 log = get_logger()
 
@@ -27,8 +29,6 @@ def run_series_pipeline(
     X, y = build_panel_features(df, n_lags=n_lags, min_obs=min_obs)
 
     dates = X.index.get_level_values("ts").unique().sort_values()
-    if len(dates) < min_train + 10:
-        raise ValueError("Not enough dates after feature engineering. Increase window_days or reduce min_train.")
 
     best_params, best_val_mse = bayesian_optimisation(
         X, y, n_trials=n_optuna_trials, val_ratio=val_ratio, n_splits=n_splits
@@ -73,7 +73,8 @@ def run_series_pipeline(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Kalshi Series Prediction Pipeline")
     parser.add_argument("series_ticker", type=str, help="Series ticker (e.g. KXBTCD)")
-    parser.add_argument("--days", type=int, default=365, help="History window in days")
+    parser.add_argument("--eval-yesterday", action="store_true", help="Calculate yesterday's PnL")
+    parser.add_argument("--days", type=int, default=365*5, help="History window in days")
     parser.add_argument("--lags", type=int, default=10, help="Number of lag features")
     parser.add_argument("--min-obs", type=int, default=0, help="Min observations per ticker")
     parser.add_argument("--trials", type=int, default=20, help="Optuna trials")
@@ -84,15 +85,27 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", type=str, default="outputs", help="Output directory")
     args = parser.parse_args()
 
-    run_series_pipeline(
-        series_ticker=args.series_ticker,
-        window_days=args.days,
-        n_lags=args.lags,
-        min_obs=args.min_obs,
-        n_optuna_trials=args.trials,
-        val_ratio=args.val_ratio,
-        n_splits=args.splits,
-        min_train=args.min_train,
-        refit_freq=args.refit_freq,
-        output_dir=args.output_dir,
-    )
+    if args.eval_yesterday:
+        safe_ticker = args.series_ticker.replace("/", "_")
+        model_file = os.path.join(args.output_dir, f"{safe_ticker}_model.txt")
+        
+        results_df = compute_yesterday_pnl(
+            series_ticker=args.series_ticker,
+            model_path=model_file,
+            n_lags=args.lags
+        )
+        print(results_df.head())
+
+    else:
+        run_series_pipeline(
+            series_ticker=args.series_ticker,
+            window_days=args.days,
+            n_lags=args.lags,
+            min_obs=args.min_obs,
+            n_optuna_trials=args.trials,
+            val_ratio=args.val_ratio,
+            n_splits=args.splits,
+            min_train=args.min_train,
+            refit_freq=args.refit_freq,
+            output_dir=args.output_dir,
+        )

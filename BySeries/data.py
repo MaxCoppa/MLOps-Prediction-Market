@@ -222,7 +222,7 @@ def build_panel_features(
 
         price     = sub["price"].replace(0, np.nan)
         ret       = price.pct_change()
-        vol_total = sub["vol_total"].replace(0, np.nan)
+        vol_total = sub["vol_total"]
         vol_yes   = sub["vol_yes"]
         vol_no    = sub["vol_no"]
 

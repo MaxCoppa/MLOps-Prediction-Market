@@ -60,7 +60,10 @@ def run_backtest(
         y_hat_opt = model_opt.predict(X_test)
         y_hat_def = model_def.predict(X_test)
         
-        sig_opt, sig_def = np.sign(y_hat_opt), np.sign(y_hat_def)
+        # L1 Normalization for capital allocation (sum of absolute weights = 1)
+        sig_opt = y_hat_opt / (np.sum(np.abs(y_hat_opt)) + 1e-9)
+        sig_def = y_hat_def / (np.sum(np.abs(y_hat_def)) + 1e-9)
+        
         pnl_opt, pnl_def = sig_opt * y_true, sig_def * y_true
 
         tickers_today = X_test.index.get_level_values("ticker")
@@ -93,14 +96,15 @@ def performance_report(
     def _calc_metrics(df: pd.DataFrame):
         if df is None or df.empty:
             return np.nan, np.nan, np.nan
-        dpnl = df["pnl"].groupby(level="date").mean()
+        # Sum used instead of mean due to L1 capital allocation
+        dpnl = df["pnl"].groupby(level="date").sum()
         sharpe = (dpnl.mean() / (dpnl.std() + 1e-9)) * np.sqrt(252)
         wr = (dpnl > 0).mean()
         valid = df[df["y_true"] != 0]
         r2 = float(r2_score(valid["y_true"], valid["y_hat"])) if len(valid) > 1 else np.nan
         return sharpe, r2, wr
 
-    daily_pnl = results["pnl"].groupby(level="date").mean()
+    daily_pnl = results["pnl"].groupby(level="date").sum()
     cum_pnl = daily_pnl.cumsum()
     max_dd = (cum_pnl - cum_pnl.cummax()).min()
     total_pnl = float(cum_pnl.iloc[-1]) if not cum_pnl.empty else 0.0
@@ -122,7 +126,7 @@ def performance_report(
 
     has_base = results_default is not None and not results_default.empty
     if has_base:
-        daily_pnl_d = results_default["pnl"].groupby(level="date").mean()
+        daily_pnl_d = results_default["pnl"].groupby(level="date").sum()
         cum_pnl_d = daily_pnl_d.cumsum()
         max_dd_d = (cum_pnl_d - cum_pnl_d.cummax()).min()
         total_pnl_d = float(cum_pnl_d.iloc[-1]) if not cum_pnl_d.empty else 0.0
@@ -144,7 +148,7 @@ def performance_report(
         ax_pnl.axvline(val_split_date, color="red", linestyle="--", linewidth=1.5, label="Optuna Val Split")
         
     ax_pnl.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax_pnl.set_title(f"Walk-Forward OOS PnL ({report['n_tickers']} tickers) — {series_ticker}")
+    ax_pnl.set_title(f"Walk-Forward OOS PnL (L1-weighted, {report['n_tickers']} tickers) — {series_ticker}")
     ax_pnl.set_ylabel("Cumulative Return")
     ax_pnl.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax_pnl.grid(True, alpha=0.3)
