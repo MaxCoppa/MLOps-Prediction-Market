@@ -4,14 +4,21 @@
     "href": "index.html",
     "title": "Test our prediction API",
     "section": "",
-    "text": "This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.\nThe architecture relies on the following sequential process:\n\nData Ingestion: Extraction of historical candlestick data and volume imbalance for binary event contracts.\nFeature Engineering: Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics.\nModelization: A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage.\nSignal Generation: The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.\n\nWe can query our deployed model through the API below."
+    "text": "This project develops a flexible quantitative trading pipeline for Kalshi event markets. Its objective is to build a generic framework capable of ingesting multiple contract series from the Kalshi API, transforming raw market activity into predictive features, and producing systematic trading signals from statistical learning models.\nFrom a modeling perspective, Kalshi markets are well suited to this approach because they generate structured information on prices, traded volumes, and contract-level market states. These data provide a natural basis for feature engineering and short-horizon prediction. The project therefore combines financial time-series analysis, machine learning, and deployment through a production-oriented API.\nThe current implementation relies on a LightGBM model trained on engineered market features, with hyperparameter tuning through Optuna and experiment tracking through MLflow. Temporal validation is performed to preserve chronological consistency and avoid information leakage. The deployed API exposes both single-observation prediction endpoints and portfolio-oriented outputs for daily trading analysis."
+  },
+  {
+    "objectID": "index.html#project-presentation",
+    "href": "index.html#project-presentation",
+    "title": "Test our prediction API",
+    "section": "",
+    "text": "This project develops a flexible quantitative trading pipeline for Kalshi event markets. Its objective is to build a generic framework capable of ingesting multiple contract series from the Kalshi API, transforming raw market activity into predictive features, and producing systematic trading signals from statistical learning models.\nFrom a modeling perspective, Kalshi markets are well suited to this approach because they generate structured information on prices, traded volumes, and contract-level market states. These data provide a natural basis for feature engineering and short-horizon prediction. The project therefore combines financial time-series analysis, machine learning, and deployment through a production-oriented API.\nThe current implementation relies on a LightGBM model trained on engineered market features, with hyperparameter tuning through Optuna and experiment tracking through MLflow. Temporal validation is performed to preserve chronological consistency and avoid information leakage. The deployed API exposes both single-observation prediction endpoints and portfolio-oriented outputs for daily trading analysis."
   },
   {
     "objectID": "index.html#methodology-architecture",
     "href": "index.html#methodology-architecture",
     "title": "Test our prediction API",
-    "section": "",
-    "text": "This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.\nThe architecture relies on the following sequential process:\n\nData Ingestion: Extraction of historical candlestick data and volume imbalance for binary event contracts.\nFeature Engineering: Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics.\nModelization: A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage.\nSignal Generation: The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.\n\nWe can query our deployed model through the API below."
+    "section": "Methodology & Architecture",
+    "text": "Methodology & Architecture\nThis API exposes the final layer of an end-to-end quantitative research pipeline designed for Kalshi event markets.\nThe architecture relies on the following sequential process:\n\nData Ingestion: Extraction of historical candlestick data and volume imbalance for binary event contracts.\nFeature Engineering: Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics.\nModelization: A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage.\nSignal Generation: The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.\n\nWe can query our deployed model through the API below."
   },
   {
     "objectID": "index.html#example-prediction",
@@ -25,14 +32,14 @@
     "href": "index.html#daily-prediction-table",
     "title": "Test our prediction API",
     "section": "Daily prediction table",
-    "text": "Daily prediction table\n\npnlUrl = `${apiRoot}/predict/pnl`\npnlData = await d3.json(pnlUrl)\n\nrows = Object.keys(pnlData.prediction.y_true).map(contract =&gt; ({\n  Contract: contract,\n  y_true: pnlData.prediction.y_true[contract],\n  y_hat: pnlData.prediction.y_hat[contract],\n  signal: pnlData.prediction.signal[contract],\n  pnl: pnlData.prediction.pnl[contract]\n}))\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInputs.table(\n  rows.map(r =&gt; ({\n    Contract: r.Contract,\n    y_true: r.y_true.toFixed(4),\n    y_hat: r.y_hat.toFixed(4),\n    signal: r.signal.toFixed(4),\n    pnl: r.pnl.toFixed(4)\n  }))\n)"
+    "text": "Daily prediction table\nThe table below presents the model performance from yesterday’s trading session on a specific trading market.\nAs an example, this focuses on the Kalshi market KXCPI-26APR https://kalshi.com/markets/kxcpi/cpi/kxcpi-26apr, which is linked to the April 2026 U.S. CPI release. This market is composed of binary event contracts defined on different inflation thresholds. Each contract resolves against the official Bureau of Labor Statistics publication, making the market a structured and transparent source of inflation expectations.\n\npnlUrl = `${apiRoot}/predict/pnl`\npnlData = await d3.json(pnlUrl)\n\nrows = Object.keys(pnlData.prediction.y_true).map(contract =&gt; ({\n  Contract: contract,\n  y_true: pnlData.prediction.y_true[contract],\n  y_hat: pnlData.prediction.y_hat[contract],\n  signal: pnlData.prediction.signal[contract],\n  pnl: pnlData.prediction.pnl[contract]\n}))\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInputs.table(\n  rows.map(r =&gt; ({\n    Contract: r.Contract,\n    y_true: r.y_true.toFixed(4),\n    y_hat: r.y_hat.toFixed(4),\n    signal: r.signal.toFixed(4),\n    pnl: r.pnl.toFixed(4)\n  }))\n)"
   },
   {
     "objectID": "index.html#try-it-yourself",
     "href": "index.html#try-it-yourself",
     "title": "Test our prediction API",
     "section": "Try it yourself",
-    "text": "Try it yourself\ncurl https://kalshi-predictor.lab.sspcloud.fr/predict/example"
+    "text": "Try it yourself\nThe endpoint accepts one market observation through query parameters and returns a prediction as JSON.\nParameters omitted from the request are treated as missing values.\ncurl \"https://kalshi-predictor.lab.sspcloud.fr/predict?RET_1=-0.01636&VOL_YES_1=0.0&VOL_NO_1=0.0&DIST_50=0.4066&DIST_MIN_20=0.0&DIST_MAX_20=1.0\"\nTo retrieve the daily output of the PnL computation pipeline, you can call:\ncurl \"https://kalshi-predictor.lab.sspcloud.fr/predict/pnl\""
   },
   {
     "objectID": "index.html#api-documentation",
@@ -40,6 +47,13 @@
     "title": "Test our prediction API",
     "section": "API documentation",
     "text": "API documentation\nhttps://kalshi-predictor.lab.sspcloud.fr/docs"
+  },
+  {
+    "objectID": "index.html#source-code-and-further-development",
+    "href": "index.html#source-code-and-further-development",
+    "title": "Test our prediction API",
+    "section": "Source code and further development",
+    "text": "Source code and further development\nThe full source code for this project is available on GitHub:\nMaxCoppa/MLOps-Prediction-Market"
   },
   {
     "objectID": "exp/README_v0.html",

@@ -154,11 +154,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#methodology-architecture" id="toc-methodology-architecture" class="nav-link active" data-scroll-target="#methodology-architecture">Methodology &amp; Architecture</a></li>
+  <li><a href="#project-presentation" id="toc-project-presentation" class="nav-link active" data-scroll-target="#project-presentation">Project presentation</a></li>
+  <li><a href="#methodology-architecture" id="toc-methodology-architecture" class="nav-link" data-scroll-target="#methodology-architecture">Methodology &amp; Architecture</a></li>
   <li><a href="#example-prediction" id="toc-example-prediction" class="nav-link" data-scroll-target="#example-prediction">Example prediction</a></li>
   <li><a href="#daily-prediction-table" id="toc-daily-prediction-table" class="nav-link" data-scroll-target="#daily-prediction-table">Daily prediction table</a></li>
   <li><a href="#try-it-yourself" id="toc-try-it-yourself" class="nav-link" data-scroll-target="#try-it-yourself">Try it yourself</a></li>
   <li><a href="#api-documentation" id="toc-api-documentation" class="nav-link" data-scroll-target="#api-documentation">API documentation</a></li>
+  <li><a href="#source-code-and-further-development" id="toc-source-code-and-further-development" class="nav-link" data-scroll-target="#source-code-and-further-development">Source code and further development</a></li>
   </ul>
 </nav>
     </div>
@@ -184,9 +186,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="project-presentation" class="level2">
+<h2 class="anchored" data-anchor-id="project-presentation">Project presentation</h2>
+<p>This project develops a flexible quantitative trading pipeline for Kalshi event markets. Its objective is to build a generic framework capable of ingesting multiple contract series from the Kalshi API, transforming raw market activity into predictive features, and producing systematic trading signals from statistical learning models.</p>
+<p>From a modeling perspective, Kalshi markets are well suited to this approach because they generate structured information on prices, traded volumes, and contract-level market states. These data provide a natural basis for feature engineering and short-horizon prediction. The project therefore combines financial time-series analysis, machine learning, and deployment through a production-oriented API.</p>
+<p>The current implementation relies on a LightGBM model trained on engineered market features, with hyperparameter tuning through Optuna and experiment tracking through MLflow. Temporal validation is performed to preserve chronological consistency and avoid information leakage. The deployed API exposes both single-observation prediction endpoints and portfolio-oriented outputs for daily trading analysis.</p>
+</section>
 <section id="methodology-architecture" class="level2">
 <h2 class="anchored" data-anchor-id="methodology-architecture">Methodology &amp; Architecture</h2>
-<p>This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.</p>
+<p>This API exposes the final layer of an end-to-end quantitative research pipeline designed for Kalshi event markets.</p>
 <p>The architecture relies on the following sequential process:</p>
 <ol type="1">
 <li><p><strong>Data Ingestion:</strong> Extraction of historical candlestick data and volume imbalance for binary event contracts.</p></li>
@@ -199,8 +207,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="example-prediction" class="level2">
 <h2 class="anchored" data-anchor-id="example-prediction">Example prediction</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="27" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 26;"><span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>apiRoot <span class="op">=</span> <span class="st">"https://kalshi-predictor.lab.sspcloud.fr"</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>predictionUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict?RET_1=-0.016363636363636358&amp;VOL_YES_1=0.0&amp;VOL_NO_1=0.0&amp;RET_2=-0.023624197733169372&amp;VOL_YES_2=0.0&amp;VOL_NO_2=0.0&amp;RET_3=-0.04324536190227335&amp;VOL_YES_3=0.0&amp;VOL_NO_3=0.0&amp;RET_4=-0.00377456722634395&amp;VOL_YES_4=0.0&amp;VOL_NO_4=0.0&amp;RET_5=0.004051228437010002&amp;VOL_YES_5=0.0&amp;VOL_NO_5=0.0&amp;RET_6=-0.0306561945781606&amp;VOL_YES_6=0.0&amp;VOL_NO_6=0.0&amp;RET_7=-0.00878955298844808&amp;VOL_YES_7=0.0&amp;VOL_NO_7=0.0&amp;RET_8=0.011815525346207556&amp;VOL_YES_8=0.0&amp;VOL_NO_8=0.0&amp;RET_9=-0.006186868686868574&amp;VOL_YES_9=0.0&amp;VOL_NO_9=0.0&amp;RET_10=-0.0183440753594446&amp;VOL_YES_10=0.0&amp;VOL_NO_10=0.0&amp;RET_MEAN_5=-0.016591306957682607&amp;RET_STD_5=0.018373453107748947&amp;RET_MEAN_10=-0.013511770105512733&amp;RET_STD_10=0.0164399943474164&amp;DIST_50=0.40659999999999996&amp;DIST_MIN_20=0.0&amp;DIST_MAX_20=0.9999999999339498`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="35" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 34;"><span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>apiRoot <span class="op">=</span> <span class="st">"https://kalshi-predictor.lab.sspcloud.fr"</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>predictionUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict?RET_1=-0.016363636363636358&amp;VOL_YES_1=0.0&amp;VOL_NO_1=0.0&amp;RET_2=-0.023624197733169372&amp;VOL_YES_2=0.0&amp;VOL_NO_2=0.0&amp;RET_3=-0.04324536190227335&amp;VOL_YES_3=0.0&amp;VOL_NO_3=0.0&amp;RET_4=-0.00377456722634395&amp;VOL_YES_4=0.0&amp;VOL_NO_4=0.0&amp;RET_5=0.004051228437010002&amp;VOL_YES_5=0.0&amp;VOL_NO_5=0.0&amp;RET_6=-0.0306561945781606&amp;VOL_YES_6=0.0&amp;VOL_NO_6=0.0&amp;RET_7=-0.00878955298844808&amp;VOL_YES_7=0.0&amp;VOL_NO_7=0.0&amp;RET_8=0.011815525346207556&amp;VOL_YES_8=0.0&amp;VOL_NO_8=0.0&amp;RET_9=-0.006186868686868574&amp;VOL_YES_9=0.0&amp;VOL_NO_9=0.0&amp;RET_10=-0.0183440753594446&amp;VOL_YES_10=0.0&amp;VOL_NO_10=0.0&amp;RET_MEAN_5=-0.016591306957682607&amp;RET_STD_5=0.018373453107748947&amp;RET_MEAN_10=-0.013511770105512733&amp;RET_STD_10=0.0164399943474164&amp;DIST_50=0.40659999999999996&amp;DIST_MIN_20=0.0&amp;DIST_MAX_20=0.9999999999339498`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-1-1" data-nodetype="declaration">
@@ -217,7 +225,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="31" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 30;"><span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>d3<span class="op">.</span><span class="fu">json</span>(predictionUrl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="39" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>d3<span class="op">.</span><span class="fu">json</span>(predictionUrl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div id="ojs-cell-2" data-nodetype="expression">
 
@@ -227,17 +235,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="daily-prediction-table" class="level2">
 <h2 class="anchored" data-anchor-id="daily-prediction-table">Daily prediction table</h2>
+<p>The table below presents the model performance from <strong>yesterday’s trading session</strong> on a specific trading market.</p>
+<p>As an example, this focuses on the Kalshi market <code>KXCPI-26APR</code> https://kalshi.com/markets/kxcpi/cpi/kxcpi-26apr, which is linked to the April 2026 U.S. CPI release. This market is composed of binary event contracts defined on different inflation thresholds. Each contract resolves against the official Bureau of Labor Statistics publication, making the market a structured and transparent source of inflation expectations.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="39" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>pnlUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict/pnl`</span></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>pnlData <span class="op">=</span> <span class="cf">await</span> d3<span class="op">.</span><span class="fu">json</span>(pnlUrl)</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> <span class="bu">Object</span><span class="op">.</span><span class="fu">keys</span>(pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>)<span class="op">.</span><span class="fu">map</span>(contract <span class="kw">=&gt;</span> ({</span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contract</span><span class="op">:</span> contract<span class="op">,</span></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_true</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>[contract]<span class="op">,</span></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_hat</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_hat</span>[contract]<span class="op">,</span></span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="dt">signal</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">signal</span>[contract]<span class="op">,</span></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pnl</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">pnl</span>[contract]</span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="52" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 51;"><span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>pnlUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict/pnl`</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>pnlData <span class="op">=</span> <span class="cf">await</span> d3<span class="op">.</span><span class="fu">json</span>(pnlUrl)</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> <span class="bu">Object</span><span class="op">.</span><span class="fu">keys</span>(pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>)<span class="op">.</span><span class="fu">map</span>(contract <span class="kw">=&gt;</span> ({</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contract</span><span class="op">:</span> contract<span class="op">,</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_true</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>[contract]<span class="op">,</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_hat</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_hat</span>[contract]<span class="op">,</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="dt">signal</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">signal</span>[contract]<span class="op">,</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pnl</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">pnl</span>[contract]</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-3-1" data-nodetype="declaration">
@@ -261,15 +271,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="51" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 50;"><span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>Inputs<span class="op">.</span><span class="fu">table</span>(</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  rows<span class="op">.</span><span class="fu">map</span>(r <span class="kw">=&gt;</span> ({</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Contract</span><span class="op">:</span> r<span class="op">.</span><span class="at">Contract</span><span class="op">,</span></span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_true</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_true</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_hat</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_hat</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="dt">signal</span><span class="op">:</span> r<span class="op">.</span><span class="at">signal</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="dt">pnl</span><span class="op">:</span> r<span class="op">.</span><span class="at">pnl</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)</span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  }))</span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="64" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 63;"><span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>Inputs<span class="op">.</span><span class="fu">table</span>(</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>  rows<span class="op">.</span><span class="fu">map</span>(r <span class="kw">=&gt;</span> ({</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Contract</span><span class="op">:</span> r<span class="op">.</span><span class="at">Contract</span><span class="op">,</span></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_true</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_true</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_hat</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_hat</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    <span class="dt">signal</span><span class="op">:</span> r<span class="op">.</span><span class="at">signal</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">pnl</span><span class="op">:</span> r<span class="op">.</span><span class="at">pnl</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div id="ojs-cell-4" data-nodetype="expression">
 
@@ -279,11 +289,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="try-it-yourself" class="level2">
 <h2 class="anchored" data-anchor-id="try-it-yourself">Try it yourself</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The endpoint accepts one market observation through query parameters and returns a prediction as JSON.</p>
+<p>Parameters omitted from the request are treated as missing values.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="st">"https://kalshi-predictor.lab.sspcloud.fr/predict?RET_1=-0.01636&amp;VOL_YES_1=0.0&amp;VOL_NO_1=0.0&amp;DIST_50=0.4066&amp;DIST_MIN_20=0.0&amp;DIST_MAX_20=1.0"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To retrieve the daily output of the PnL computation pipeline, you can call:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="st">"https://kalshi-predictor.lab.sspcloud.fr/predict/pnl"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="api-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="api-documentation">API documentation</h2>
 <p><a href="https://kalshi-predictor.lab.sspcloud.fr/docs">https://kalshi-predictor.lab.sspcloud.fr/docs</a></p>
+</section>
+<section id="source-code-and-further-development" class="level2">
+<h2 class="anchored" data-anchor-id="source-code-and-further-development">Source code and further development</h2>
+<p>The full source code for this project is available on GitHub:</p>
+<p><a href="https://github.com/MaxCoppa/MLOps-Prediction-Market">MaxCoppa/MLOps-Prediction-Market</a></p>
 
 
 </section>
