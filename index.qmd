@@ -1,55 +1,23 @@
 ---
-
 title: "Test our prediction API"
-
 format: html
-
 echo: false
-
 ---
 
+## Methodology & Architecture
 
+This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.
 
-We can query our deployed model through the API.
+The architecture relies on the following sequential process:
+1. **Data Ingestion:** Extraction of historical candlestick data and asymmetric order flow (volume imbalance) for binary event contracts.
+2. **Feature Engineering:** Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics.
+3. **Modelization:** A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage.
+4. **Signal Generation:** The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.
 
-
+We can query our deployed model through the API below.
 
 ## Example prediction
 
-
-
 ```{ojs}
-
-apiRoot = "https://kalshi-predictor.lab.sspcloud.fr"
-
+apiRoot = "[https://kalshi-predictor.lab.sspcloud.fr](https://kalshi-predictor.lab.sspcloud.fr)"
 predictionUrl = `${apiRoot}/predict/example`
-
-```
-
-
-
-```{ojs}
-
-d3.json(predictionUrl)
-
-```
-
-
-
-## Try it yourself
-
-
-
-```bash
-
-curl https://kalshi-predictor.lab.sspcloud.fr/predict/example
-
-```
-
-
-
-## API documentation
-
-
-
-[https://kalshi-predictor.lab.sspcloud.fr/docs](https://kalshi-predictor.lab.sspcloud.fr/docs)
