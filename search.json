@@ -18,7 +18,21 @@
     "href": "index.html#example-prediction",
     "title": "Test our prediction API",
     "section": "Example prediction",
-    "text": "Example prediction\napiRoot = “https://kalshi-predictor.lab.sspcloud.fr” predictionUrl = ${apiRoot}/predict/example"
+    "text": "Example prediction\n\napiRoot = \"https://kalshi-predictor.lab.sspcloud.fr\"\npredictionUrl = `${apiRoot}/predict/example`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nd3.json(predictionUrl)"
+  },
+  {
+    "objectID": "index.html#try-it-yourself",
+    "href": "index.html#try-it-yourself",
+    "title": "Test our prediction API",
+    "section": "Try it yourself",
+    "text": "Try it yourself\ncurl https://kalshi-predictor.lab.sspcloud.fr/predict/example"
+  },
+  {
+    "objectID": "index.html#api-documentation",
+    "href": "index.html#api-documentation",
+    "title": "Test our prediction API",
+    "section": "API documentation",
+    "text": "API documentation\nhttps://kalshi-predictor.lab.sspcloud.fr/docs"
   },
   {
     "objectID": "exp/README_v0.html",
