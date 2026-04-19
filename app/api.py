@@ -19,7 +19,6 @@ logging.info("Getting model from MLFlow")
 model_name = "model_KXCPI"
 
 model_uri = f"models:/{model_name}@production"
-model_uri = f"models:/{model_name}/2"
 model = mlflow.lightgbm.load_model(model_uri)
 
 # Default input from CSV (first row)
