@@ -2,23 +2,30 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Test our prediction API",
+    "title": "kalshi-predictor",
     "section": "",
-    "text": "This API serves as the live inference engine for a quantitative trading model deployed on the Kalshi prediction market.\nThe underlying LightGBM regressor evaluates panel data across binary event tickers (e.g., economics, politics, pop culture). It leverages time-series features—most notably price momentum and order flow imbalance (the normalized delta between executed Yes and No contract volumes)—to predict short-term directional returns.\nInstead of raw price targets, the model outputs an L1-normalized continuous signal. This transforms the predictions into a strict capital allocation vector, dictating exactly what percentage of a fixed portfolio should be deployed to each contract on a daily basis.\nWe can query our deployed model through the API below."
-  },
-  {
-    "objectID": "index.html#project-overview",
-    "href": "index.html#project-overview",
-    "title": "Test our prediction API",
-    "section": "",
-    "text": "This API serves as the live inference engine for a quantitative trading model deployed on the Kalshi prediction market.\nThe underlying LightGBM regressor evaluates panel data across binary event tickers (e.g., economics, politics, pop culture). It leverages time-series features—most notably price momentum and order flow imbalance (the normalized delta between executed Yes and No contract volumes)—to predict short-term directional returns.\nInstead of raw price targets, the model outputs an L1-normalized continuous signal. This transforms the predictions into a strict capital allocation vector, dictating exactly what percentage of a fixed portfolio should be deployed to each contract on a daily basis.\nWe can query our deployed model through the API below."
+    "text": "title: “Test our prediction API”\nformat: html\necho: false\nWe can query our deployed model through the API."
   },
   {
     "objectID": "index.html#example-prediction",
     "href": "index.html#example-prediction",
-    "title": "Test our prediction API",
+    "title": "kalshi-predictor",
     "section": "Example prediction",
-    "text": "Example prediction\napiRoot = “https://kalshi-predictor.lab.sspcloud.fr” predictionUrl = ${apiRoot}/predict/example"
+    "text": "Example prediction\n\napiRoot = \"https://kalshi-predictor.lab.sspcloud.fr\"\n\npredictionUrl = `${apiRoot}/predict/example`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nd3.json(predictionUrl)"
+  },
+  {
+    "objectID": "index.html#try-it-yourself",
+    "href": "index.html#try-it-yourself",
+    "title": "kalshi-predictor",
+    "section": "Try it yourself",
+    "text": "Try it yourself\n\ncurl https://kalshi-predictor.lab.sspcloud.fr/predict/example"
+  },
+  {
+    "objectID": "index.html#api-documentation",
+    "href": "index.html#api-documentation",
+    "title": "kalshi-predictor",
+    "section": "API documentation",
+    "text": "API documentation\nhttps://kalshi-predictor.lab.sspcloud.fr/docs"
   },
   {
     "objectID": "exp/README_v0.html",
