@@ -32,6 +32,34 @@ predictionUrl = `${apiRoot}/predict/example`
 d3.json(predictionUrl)
 ```
 
+
+## Daily prediction table
+
+```{ojs}
+pnlUrl = `${apiRoot}/predict/pnl`
+pnlData = await d3.json(pnlUrl)
+
+rows = Object.keys(pnlData.prediction.y_true).map(contract => ({
+  Contract: contract,
+  y_true: pnlData.prediction.y_true[contract],
+  y_hat: pnlData.prediction.y_hat[contract],
+  signal: pnlData.prediction.signal[contract],
+  pnl: pnlData.prediction.pnl[contract]
+}))
+```
+
+```{ojs}
+Inputs.table(
+  rows.map(r => ({
+    Contract: r.Contract,
+    y_true: r.y_true.toFixed(4),
+    y_hat: r.y_hat.toFixed(4),
+    signal: r.signal.toFixed(4),
+    pnl: r.pnl.toFixed(4)
+  }))
+)
+```
+
 ## Try it yourself
 
 ```bash
