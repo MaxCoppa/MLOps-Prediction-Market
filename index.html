@@ -23,41 +23,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -105,8 +70,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script type="module" src="site_libs/quarto-ojs/quarto-ojs-runtime.js"></script>
-<link href="site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="styles.css">
@@ -154,9 +117,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#example-prediction" id="toc-example-prediction" class="nav-link active" data-scroll-target="#example-prediction">Example prediction</a></li>
-  <li><a href="#try-it-yourself" id="toc-try-it-yourself" class="nav-link" data-scroll-target="#try-it-yourself">Try it yourself</a></li>
-  <li><a href="#api-documentation" id="toc-api-documentation" class="nav-link" data-scroll-target="#api-documentation">API documentation</a></li>
+  <li><a href="#project-overview" id="toc-project-overview" class="nav-link active" data-scroll-target="#project-overview">Project Overview</a></li>
+  <li><a href="#example-prediction" id="toc-example-prediction" class="nav-link" data-scroll-target="#example-prediction">Example prediction</a></li>
   </ul>
 </nav>
     </div>
@@ -182,59 +144,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>We can query our deployed model through the API.</p>
+<section id="project-overview" class="level2">
+<h2 class="anchored" data-anchor-id="project-overview">Project Overview</h2>
+<p>This API serves as the live inference engine for a quantitative trading model deployed on the <strong>Kalshi</strong> prediction market.</p>
+<p>The underlying LightGBM regressor evaluates panel data across binary event tickers (e.g., economics, politics, pop culture). It leverages time-series features—most notably price momentum and <strong>order flow imbalance</strong> (the normalized delta between executed <em>Yes</em> and <em>No</em> contract volumes)—to predict short-term directional returns.</p>
+<p>Instead of raw price targets, the model outputs an L1-normalized continuous signal. This transforms the predictions into a strict capital allocation vector, dictating exactly what percentage of a fixed portfolio should be deployed to each contract on a daily basis.</p>
+<p>We can query our deployed model through the API below.</p>
+</section>
 <section id="example-prediction" class="level2">
 <h2 class="anchored" data-anchor-id="example-prediction">Example prediction</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb1" data-startfrom="12" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 11;"><span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>apiRoot <span class="op">=</span> <span class="st">"https://kalshi-predictor.lab.sspcloud.fr"</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>predictionUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict/example`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-1" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<div id="ojs-cell-1-2" data-nodetype="declaration">
-
-</div>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb2" data-startfrom="16" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 15;"><span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>d3<span class="op">.</span><span class="fu">json</span>(predictionUrl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div id="ojs-cell-2" data-nodetype="expression">
-
-</div>
-</div>
-</div>
-</section>
-<section id="try-it-yourself" class="level2">
-<h2 class="anchored" data-anchor-id="try-it-yourself">Try it yourself</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="api-documentation" class="level2">
-<h2 class="anchored" data-anchor-id="api-documentation">API documentation</h2>
-<p><a href="https://kalshi-predictor.lab.sspcloud.fr/docs">https://kalshi-predictor.lab.sspcloud.fr/docs</a></p>
+<p>apiRoot = “<a href="https://kalshi-predictor.lab.sspcloud.fr">https://kalshi-predictor.lab.sspcloud.fr</a>” predictionUrl = <code>${apiRoot}/predict/example</code></p>
 
 
 </section>
 
 </main> <!-- /main -->
-<script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImFwaVJvb3QgPSBcImh0dHBzOi8va2Fsc2hpLXByZWRpY3Rvci5sYWIuc3NwY2xvdWQuZnJcIlxucHJlZGljdGlvblVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvZXhhbXBsZWBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImQzLmpzb24ocHJlZGljdGlvblVybClcbiJ9XX0=
-</script>
-<script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../..";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
-</script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
