@@ -156,6 +156,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#methodology-architecture" id="toc-methodology-architecture" class="nav-link active" data-scroll-target="#methodology-architecture">Methodology &amp; Architecture</a></li>
   <li><a href="#example-prediction" id="toc-example-prediction" class="nav-link" data-scroll-target="#example-prediction">Example prediction</a></li>
+  <li><a href="#daily-prediction-table" id="toc-daily-prediction-table" class="nav-link" data-scroll-target="#daily-prediction-table">Daily prediction table</a></li>
   <li><a href="#try-it-yourself" id="toc-try-it-yourself" class="nav-link" data-scroll-target="#try-it-yourself">Try it yourself</a></li>
   <li><a href="#api-documentation" id="toc-api-documentation" class="nav-link" data-scroll-target="#api-documentation">API documentation</a></li>
   </ul>
@@ -224,9 +225,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+<section id="daily-prediction-table" class="level2">
+<h2 class="anchored" data-anchor-id="daily-prediction-table">Daily prediction table</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="39" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>pnlUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict/pnl`</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>d3<span class="op">.</span><span class="fu">json</span>(pnlUrl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-1" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-2" data-nodetype="expression">
+
+</div>
+</div>
+</div>
+</div>
+</section>
 <section id="try-it-yourself" class="level2">
 <h2 class="anchored" data-anchor-id="try-it-yourself">Try it yourself</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="api-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="api-documentation">API documentation</h2>
@@ -237,7 +259,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </main> <!-- /main -->
 <script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImFwaVJvb3QgPSBcImh0dHBzOi8va2Fsc2hpLXByZWRpY3Rvci5sYWIuc3NwY2xvdWQuZnJcIlxucHJlZGljdGlvblVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvZXhhbXBsZWBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImQzLmpzb24ocHJlZGljdGlvblVybClcbiJ9XX0=
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImFwaVJvb3QgPSBcImh0dHBzOi8va2Fsc2hpLXByZWRpY3Rvci5sYWIuc3NwY2xvdWQuZnJcIlxucHJlZGljdGlvblVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvZXhhbXBsZWBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImQzLmpzb24ocHJlZGljdGlvblVybClcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InBubFVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvcG5sYFxuZDMuanNvbihwbmxVcmwpXG4ifV19
 </script>
 <script type="module">
 if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
