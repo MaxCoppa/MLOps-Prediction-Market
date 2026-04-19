@@ -229,7 +229,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="daily-prediction-table">Daily prediction table</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb3" data-startfrom="39" data-source-offset="-0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 38;"><span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>pnlUrl <span class="op">=</span> <span class="vs">`</span><span class="sc">${</span>apiRoot<span class="sc">}</span><span class="vs">/predict/pnl`</span></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>d3<span class="op">.</span><span class="fu">json</span>(pnlUrl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>pnlData <span class="op">=</span> <span class="cf">await</span> d3<span class="op">.</span><span class="fu">json</span>(pnlUrl)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> <span class="bu">Object</span><span class="op">.</span><span class="fu">keys</span>(pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>)<span class="op">.</span><span class="fu">map</span>(contract <span class="kw">=&gt;</span> ({</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contract</span><span class="op">:</span> contract<span class="op">,</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_true</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_true</span>[contract]<span class="op">,</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>  <span class="dt">y_hat</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">y_hat</span>[contract]<span class="op">,</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="dt">signal</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">signal</span>[contract]<span class="op">,</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pnl</span><span class="op">:</span> pnlData<span class="op">.</span><span class="at">prediction</span><span class="op">.</span><span class="at">pnl</span>[contract]</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <div id="ojs-cell-3-1" data-nodetype="declaration">
@@ -239,16 +247,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="cell-output cell-output-display">
 <div>
-<div id="ojs-cell-3-2" data-nodetype="expression">
+<div id="ojs-cell-3-2" data-nodetype="declaration">
 
 </div>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<div id="ojs-cell-3-3" data-nodetype="declaration">
+
+</div>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code hidden" id="cb4" data-startfrom="51" data-source-offset="0"><pre class="sourceCode js code-with-copy"><code class="sourceCode javascript" style="counter-reset: source-line 50;"><span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>Inputs<span class="op">.</span><span class="fu">table</span>(</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  rows<span class="op">.</span><span class="fu">map</span>(r <span class="kw">=&gt;</span> ({</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Contract</span><span class="op">:</span> r<span class="op">.</span><span class="at">Contract</span><span class="op">,</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_true</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_true</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    <span class="dt">y_hat</span><span class="op">:</span> r<span class="op">.</span><span class="at">y_hat</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="dt">signal</span><span class="op">:</span> r<span class="op">.</span><span class="at">signal</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)<span class="op">,</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="dt">pnl</span><span class="op">:</span> r<span class="op">.</span><span class="at">pnl</span><span class="op">.</span><span class="fu">toFixed</span>(<span class="dv">4</span>)</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  }))</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="ojs-cell-4" data-nodetype="expression">
+
 </div>
 </div>
 </div>
 </section>
 <section id="try-it-yourself" class="level2">
 <h2 class="anchored" data-anchor-id="try-it-yourself">Try it yourself</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://kalshi-predictor.lab.sspcloud.fr/predict/example</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="api-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="api-documentation">API documentation</h2>
@@ -259,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </main> <!-- /main -->
 <script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImFwaVJvb3QgPSBcImh0dHBzOi8va2Fsc2hpLXByZWRpY3Rvci5sYWIuc3NwY2xvdWQuZnJcIlxucHJlZGljdGlvblVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvZXhhbXBsZWBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImQzLmpzb24ocHJlZGljdGlvblVybClcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InBubFVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvcG5sYFxuZDMuanNvbihwbmxVcmwpXG4ifV19
+eyJjb250ZW50cyI6W3sibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMSIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImFwaVJvb3QgPSBcImh0dHBzOi8va2Fsc2hpLXByZWRpY3Rvci5sYWIuc3NwY2xvdWQuZnJcIlxucHJlZGljdGlvblVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvZXhhbXBsZWBcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMiIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6ImQzLmpzb24ocHJlZGljdGlvblVybClcbiJ9LHsibWV0aG9kTmFtZSI6ImludGVycHJldCIsImNlbGxOYW1lIjoib2pzLWNlbGwtMyIsImlubGluZSI6ZmFsc2UsInNvdXJjZSI6InBubFVybCA9IGAke2FwaVJvb3R9L3ByZWRpY3QvcG5sYFxucG5sRGF0YSA9IGF3YWl0IGQzLmpzb24ocG5sVXJsKVxuXG5yb3dzID0gT2JqZWN0LmtleXMocG5sRGF0YS5wcmVkaWN0aW9uLnlfdHJ1ZSkubWFwKGNvbnRyYWN0ID0+ICh7XG4gIENvbnRyYWN0OiBjb250cmFjdCxcbiAgeV90cnVlOiBwbmxEYXRhLnByZWRpY3Rpb24ueV90cnVlW2NvbnRyYWN0XSxcbiAgeV9oYXQ6IHBubERhdGEucHJlZGljdGlvbi55X2hhdFtjb250cmFjdF0sXG4gIHNpZ25hbDogcG5sRGF0YS5wcmVkaWN0aW9uLnNpZ25hbFtjb250cmFjdF0sXG4gIHBubDogcG5sRGF0YS5wcmVkaWN0aW9uLnBubFtjb250cmFjdF1cbn0pKVxuIn0seyJtZXRob2ROYW1lIjoiaW50ZXJwcmV0IiwiY2VsbE5hbWUiOiJvanMtY2VsbC00IiwiaW5saW5lIjpmYWxzZSwic291cmNlIjoiSW5wdXRzLnRhYmxlKFxuICByb3dzLm1hcChyID0+ICh7XG4gICAgQ29udHJhY3Q6IHIuQ29udHJhY3QsXG4gICAgeV90cnVlOiByLnlfdHJ1ZS50b0ZpeGVkKDQpLFxuICAgIHlfaGF0OiByLnlfaGF0LnRvRml4ZWQoNCksXG4gICAgc2lnbmFsOiByLnNpZ25hbC50b0ZpeGVkKDQpLFxuICAgIHBubDogci5wbmwudG9GaXhlZCg0KVxuICB9KSlcbilcbiJ9XX0=
 </script>
 <script type="module">
 if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }

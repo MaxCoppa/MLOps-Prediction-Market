@@ -25,7 +25,7 @@
     "href": "index.html#daily-prediction-table",
     "title": "Test our prediction API",
     "section": "Daily prediction table",
-    "text": "Daily prediction table\n\npnlUrl = `${apiRoot}/predict/pnl`\nd3.json(pnlUrl)"
+    "text": "Daily prediction table\n\npnlUrl = `${apiRoot}/predict/pnl`\npnlData = await d3.json(pnlUrl)\n\nrows = Object.keys(pnlData.prediction.y_true).map(contract =&gt; ({\n  Contract: contract,\n  y_true: pnlData.prediction.y_true[contract],\n  y_hat: pnlData.prediction.y_hat[contract],\n  signal: pnlData.prediction.signal[contract],\n  pnl: pnlData.prediction.pnl[contract]\n}))\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nInputs.table(\n  rows.map(r =&gt; ({\n    Contract: r.Contract,\n    y_true: r.y_true.toFixed(4),\n    y_hat: r.y_hat.toFixed(4),\n    signal: r.signal.toFixed(4),\n    pnl: r.pnl.toFixed(4)\n  }))\n)"
   },
   {
     "objectID": "index.html#try-it-yourself",
