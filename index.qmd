@@ -4,9 +4,17 @@ format: html
 echo: false
 ---
 
+## Project presentation
+
+This project develops a flexible quantitative trading pipeline for Kalshi event markets. Its objective is to build a generic framework capable of ingesting multiple contract series from the Kalshi API, transforming raw market activity into predictive features, and producing systematic trading signals from statistical learning models.
+
+From a modeling perspective, Kalshi markets are well suited to this approach because they generate structured information on prices, traded volumes, and contract-level market states. These data provide a natural basis for feature engineering and short-horizon prediction. The project therefore combines financial time-series analysis, machine learning, and deployment through a production-oriented API.
+
+The current implementation relies on a LightGBM model trained on engineered market features, with hyperparameter tuning through Optuna and experiment tracking through MLflow. Temporal validation is performed to preserve chronological consistency and avoid information leakage. The deployed API exposes both single-observation prediction endpoints and portfolio-oriented outputs for daily trading analysis.
+
 ## Methodology & Architecture
 
-This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.
+This API exposes the final layer of an end-to-end quantitative research pipeline designed for Kalshi event markets.
 
 The architecture relies on the following sequential process:
 
@@ -35,6 +43,11 @@ d3.json(predictionUrl)
 
 ## Daily prediction table
 
+The table below presents the model performance from **yesterday’s trading session** on a specific trading market. 
+
+
+As an example, this focuses on the Kalshi market `KXCPI-26APR` https://kalshi.com/markets/kxcpi/cpi/kxcpi-26apr, which is linked to the April 2026 U.S. CPI release. This market is composed of binary event contracts defined on different inflation thresholds. Each contract resolves against the official Bureau of Labor Statistics publication, making the market a structured and transparent source of inflation expectations.
+
 ```{ojs}
 pnlUrl = `${apiRoot}/predict/pnl`
 pnlData = await d3.json(pnlUrl)
@@ -62,11 +75,26 @@ Inputs.table(
 
 ## Try it yourself
 
+The endpoint accepts one market observation through query parameters and returns a prediction as JSON.
+
+Parameters omitted from the request are treated as missing values.
+
 ```bash
-curl https://kalshi-predictor.lab.sspcloud.fr/predict/example
+curl "https://kalshi-predictor.lab.sspcloud.fr/predict?RET_1=-0.01636&VOL_YES_1=0.0&VOL_NO_1=0.0&DIST_50=0.4066&DIST_MIN_20=0.0&DIST_MAX_20=1.0"
+```
+
+To retrieve the daily output of the PnL computation pipeline, you can call:
+
+```bash
+curl "https://kalshi-predictor.lab.sspcloud.fr/predict/pnl"
 ```
 
 ## API documentation
 
 [https://kalshi-predictor.lab.sspcloud.fr/docs](https://kalshi-predictor.lab.sspcloud.fr/docs)
 
+## Source code and further development
+
+The full source code for this project is available on GitHub:
+
+[MaxCoppa/MLOps-Prediction-Market](https://github.com/MaxCoppa/MLOps-Prediction-Market)

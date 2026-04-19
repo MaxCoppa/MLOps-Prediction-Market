@@ -149,7 +149,7 @@ It provides:
 ### TO add
 
 ```bash
-git tag -a v0.0.x -m "new version"
+git tag -a v0.0.10 -m "new version"
 git push --tags
 ```
 

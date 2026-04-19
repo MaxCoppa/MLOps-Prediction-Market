@@ -21,14 +21,10 @@ model_name = "model_KXCPI"
 model_uri = f"models:/{model_name}@production"
 model = mlflow.lightgbm.load_model(model_uri)
 
-# Default input from CSV (first row)
-DEFAULT_X = pd.read_csv("app/X_example.csv").iloc[-1].to_dict()
-
 app = FastAPI(
     title="Kalshi Prediction API",
     description="API for model Kalshi serie prediction",
 )
-
 
 @app.get("/", tags=["Welcome"])
 def show_welcome_page():
@@ -90,7 +86,6 @@ async def predict(
     DIST_MIN_20: float = None,
     DIST_MAX_20: float = None,
     VOL_IMBALANCE: float = None,
-    ts: str = None,
 ) -> dict:
     params = {
         "RET_1": RET_1,
@@ -143,35 +138,13 @@ async def predict(
         "DIST_MIN_20": DIST_MIN_20,
         "DIST_MAX_20": DIST_MAX_20,
         "VOL_IMBALANCE": VOL_IMBALANCE,
-        "ts": ts,
     }
 
     X = pd.DataFrame([params])
-
-    if "ts" in X.columns:
-        X = X.drop(columns=["ts"])
-
     X = X.apply(pd.to_numeric, errors="coerce")
 
     prediction = float(model.predict(X)[0])
     return {"prediction": prediction}
-
-@app.get("/predict/example", tags=["Predict"])
-async def predict_example():
-    X = pd.DataFrame([DEFAULT_X])
-
-    if "ts" in X.columns:
-        X = X.drop(columns=["ts"])
-
-    X = X.apply(pd.to_numeric, errors="coerce")
-
-    prediction = float(model.predict(X)[0])
-
-    return {
-        "prediction": prediction,
-        "note": "This uses a default example from X_example.csv",
-    }
-
 
 @app.get("/predict/pnl", tags=["Predict"])
 async def predict_pnl():
