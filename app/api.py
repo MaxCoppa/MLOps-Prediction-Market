@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import pandas as pd
 import mlflow
 import logging
+from kalshi_predictor.series import compute_yesterday_pnl
 
 logging.basicConfig(
     format="{asctime} - {levelname} - {message}",
@@ -15,9 +16,10 @@ logging.basicConfig(
 logging.info("Getting model from MLFlow")
 
 # Load the model from the Model Registry
-model_name = "model_KXGDP"
+model_name = "model_KXCPI"
 
 model_uri = f"models:/{model_name}@production"
+model_uri = f"models:/{model_name}/2"
 model = mlflow.lightgbm.load_model(model_uri)
 
 # Default input from CSV (first row)
@@ -69,4 +71,15 @@ async def predict_example():
     return {
         "prediction": prediction,
         "note": "This uses a default example from X_example.csv",
+    }
+
+
+@app.get("/predict/pnl", tags=["Predict"])
+async def predict_pnl():
+
+    prediction = compute_yesterday_pnl("KXCPI")
+
+    return {
+        "prediction": prediction,
+        "note": "Hello!",
     }
