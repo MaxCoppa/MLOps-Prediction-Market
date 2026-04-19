@@ -72,11 +72,11 @@ async def predict_example():
         "note": "This uses a default example from X_example.csv",
     }
 
-
+    
 @app.get("/predict/pnl", tags=["Predict"])
 async def predict_pnl():
 
-    prediction = compute_yesterday_pnl("KXCPI")
+    prediction = compute_yesterday_pnl("KXCPI",model)
 
     return {
         "prediction": prediction,
