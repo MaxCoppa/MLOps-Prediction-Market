@@ -2,30 +2,23 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "kalshi-predictor",
+    "title": "Test our prediction API",
     "section": "",
-    "text": "title: “Test our prediction API”\nformat: html\necho: false\nWe can query our deployed model through the API."
+    "text": "This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.\nThe architecture relies on the following sequential process: 1. Data Ingestion: Extraction of historical candlestick data and asymmetric order flow (volume imbalance) for binary event contracts. 2. Feature Engineering: Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics. 3. Modelization: A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage. 4. Signal Generation: The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.\nWe can query our deployed model through the API below."
+  },
+  {
+    "objectID": "index.html#methodology-architecture",
+    "href": "index.html#methodology-architecture",
+    "title": "Test our prediction API",
+    "section": "",
+    "text": "This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.\nThe architecture relies on the following sequential process: 1. Data Ingestion: Extraction of historical candlestick data and asymmetric order flow (volume imbalance) for binary event contracts. 2. Feature Engineering: Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics. 3. Modelization: A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage. 4. Signal Generation: The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.\nWe can query our deployed model through the API below."
   },
   {
     "objectID": "index.html#example-prediction",
     "href": "index.html#example-prediction",
-    "title": "kalshi-predictor",
+    "title": "Test our prediction API",
     "section": "Example prediction",
-    "text": "Example prediction\n\napiRoot = \"https://kalshi-predictor.lab.sspcloud.fr\"\n\npredictionUrl = `${apiRoot}/predict/example`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nd3.json(predictionUrl)"
-  },
-  {
-    "objectID": "index.html#try-it-yourself",
-    "href": "index.html#try-it-yourself",
-    "title": "kalshi-predictor",
-    "section": "Try it yourself",
-    "text": "Try it yourself\n\ncurl https://kalshi-predictor.lab.sspcloud.fr/predict/example"
-  },
-  {
-    "objectID": "index.html#api-documentation",
-    "href": "index.html#api-documentation",
-    "title": "kalshi-predictor",
-    "section": "API documentation",
-    "text": "API documentation\nhttps://kalshi-predictor.lab.sspcloud.fr/docs"
+    "text": "Example prediction\napiRoot = “https://kalshi-predictor.lab.sspcloud.fr” predictionUrl = ${apiRoot}/predict/example"
   },
   {
     "objectID": "exp/README_v0.html",
