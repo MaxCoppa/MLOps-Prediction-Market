@@ -4,27 +4,20 @@ format: html
 echo: false
 ---
 
-We can query our deployed model through the API.
+## Project Overview
+
+This API serves as the live inference engine for a quantitative trading model deployed on the **Kalshi** prediction market. 
+
+The underlying LightGBM regressor evaluates panel data across binary event tickers (e.g., economics, politics, pop culture). It leverages time-series features—most notably price momentum and **order flow imbalance** (the normalized delta between executed *Yes* and *No* contract volumes)—to predict short-term directional returns.
+
+Instead of raw price targets, the model outputs an L1-normalized continuous signal. This transforms the predictions into a strict capital allocation vector, dictating exactly what percentage of a fixed portfolio should be deployed to each contract on a daily basis.
+
+We can query our deployed model through the API below.
 
 ## Example prediction
 
 ```{ojs}
-apiRoot = "https://kalshi-predictor.lab.sspcloud.fr"
+apiRoot = "[https://kalshi-predictor.lab.sspcloud.fr](https://kalshi-predictor.lab.sspcloud.fr)"
 predictionUrl = `${apiRoot}/predict/example`
-```
-
-```{ojs}
-d3.json(predictionUrl)
-```
-
-## Try it yourself
-
-```bash
-curl https://kalshi-predictor.lab.sspcloud.fr/predict/example
-```
-
-## API documentation
-
-[https://kalshi-predictor.lab.sspcloud.fr/docs](https://kalshi-predictor.lab.sspcloud.fr/docs)
 
 
