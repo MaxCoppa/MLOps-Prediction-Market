@@ -147,7 +147,13 @@ ul.task-list li input[type="checkbox"] {
 <section id="methodology-architecture" class="level2">
 <h2 class="anchored" data-anchor-id="methodology-architecture">Methodology &amp; Architecture</h2>
 <p>This API serves a quantitative trading model trained for the Kalshi prediction market. It is the final endpoint of a fully automated MLOps pipeline.</p>
-<p>The architecture relies on the following sequential process: 1. <strong>Data Ingestion:</strong> Extraction of historical candlestick data and volume imbalance for binary event contracts. 2. <strong>Feature Engineering:</strong> Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics. 3. <strong>Modelization:</strong> A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage. 4. <strong>Signal Generation:</strong> The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.</p>
+<p>The architecture relies on the following sequential process:</p>
+<ol type="1">
+<li><p><strong>Data Ingestion:</strong> Extraction of historical candlestick data and volume imbalance for binary event contracts.</p></li>
+<li><p><strong>Feature Engineering:</strong> Computation of time-series features such as rolling price momentum, volatility, and liquidity metrics.</p></li>
+<li><p><strong>Modelization:</strong> A LightGBM regressor optimized via Bayesian search (Optuna) and validated through strict walk-forward cross-validation to prevent future data leakage.</p></li>
+<li><p><strong>Signal Generation:</strong> The model predicts short-term directional returns. The raw outputs are L1-normalized. This translates predictions into a strict capital allocation vector, dictating the exact portfolio weight assigned to each contract daily.</p></li>
+</ol>
 <p>We can query our deployed model through the API below.</p>
 </section>
 <section id="example-prediction" class="level2">
