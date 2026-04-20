@@ -32,7 +32,7 @@ def run_backtest(
         )
 
     model_opt = lgb.LGBMRegressor(**best_params)
-    model_def = lgb.LGBMRegressor()  # Baseline model
+    model_def = lgb.LGBMRegressor()  
     model_trained = False
 
     results_opt, metrics_opt = [], []
@@ -67,7 +67,6 @@ def run_backtest(
         if not model_trained:
             continue
 
-        # Predictions for both models
         y_true = y_test.values
         y_hat_opt = model_opt.predict(X_test)
         y_hat_def = model_def.predict(X_test)
@@ -103,13 +102,11 @@ def run_backtest(
             )
             results_def.append(res_d)
 
-        # Refit metrics for both models
         if should_refit:
             y_tr_arr = y_train.values.flatten()
             mask_tr = y_tr_arr != 0
             mask_te = y_true != 0
 
-            # Sub-function to calculate train/test metrics cleanly
             def calc_metrics(model, y_hat_te):
                 yhat_tr_a = model.predict(X_train).flatten()
 
@@ -167,7 +164,6 @@ def run_backtest(
                 }
             )
 
-    # Convert to DataFrames
     res_df_opt = (
         pd.DataFrame(results_opt).set_index(["date", "ticker"]).sort_index()
         if results_opt
@@ -199,6 +195,9 @@ def performance_report(
     metrics_default: pd.DataFrame = None,
 ) -> dict:
     os.makedirs(output_dir, exist_ok=True)
+    """
+    Summarizes the performance with key metrics.
+    """
 
     daily_pnl = results["pnl"].groupby(level="date").mean()
     cum_pnl = daily_pnl.cumsum()

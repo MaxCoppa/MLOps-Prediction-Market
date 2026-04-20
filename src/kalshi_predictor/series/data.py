@@ -13,11 +13,6 @@ log = get_logger()
 API_URL = "https://api.elections.kalshi.com/trade-api/v2"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 1.  DISCOVER TICKERS IN A SERIES
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 def fetch_tickers(series_ticker: str) -> list[str]:
     """
     Return all market tickers belonging to a series.
@@ -46,12 +41,10 @@ def fetch_tickers(series_ticker: str) -> list[str]:
     return tickers
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 2.  FETCH RAW DATA FOR ALL TICKERS  →  MultiIndex DataFrame
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 def _fetch_trades_worker(ticker: str, start_ts: int, end_ts: int) -> list[dict]:
+    """
+    Worker function to fetch trades for a single ticker. Designed for parallel execution.
+    """
     session = requests.Session()
     cursor, trades = "", []
 
@@ -92,6 +85,10 @@ def fetch_data(
     end_dt = datetime.now(timezone.utc)
     start_ts = int((end_dt - timedelta(days=window_days)).timestamp())
     end_ts = int(end_dt.timestamp())
+    """
+    Fetch and merge candlestick + trade data for all tickers in a series, 
+    returning a single panel DataFrame with MultiIndex (date, ticker).
+    """
 
     log.info(f"Fetching candlesticks for {len(tickers)} tickers …")
     all_candles = []
@@ -220,11 +217,6 @@ def fetch_data(
     return df_candles
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 3.  FEATURE ENGINEERING  →  panel (date, ticker) MultiIndex
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 def build_features(
     df: pd.DataFrame,
     n_lags: int = 10,
@@ -262,20 +254,17 @@ def build_features(
 
         f = pd.DataFrame(index=sub.index)
 
-        # lagged features
         for lag in range(1, n_lags + 1):
             f[f"RET_{lag}"] = ret.shift(lag)
             f[f"VOL_YES_{lag}"] = vol_yes.shift(lag)
             f[f"VOL_NO_{lag}"] = vol_no.shift(lag)
             f[f"VOL_TOTAL_{lag}"] = vol_total.shift(lag)
 
-        # rolling stats
         for window in [5, 10]:
             f[f"RET_MEAN_{window}"] = ret.shift(1).rolling(window).mean()
             f[f"RET_STD_{window}"] = ret.shift(1).rolling(window).std()
             f[f"VOL_MEAN_{window}"] = vol_total.shift(1).rolling(window).mean()
 
-        # price level features
         roll_min = price.shift(1).rolling(20).min()
         roll_max = price.shift(1).rolling(20).max()
         f["DIST_50"] = (price.shift(1) - 50.0) / 50.0

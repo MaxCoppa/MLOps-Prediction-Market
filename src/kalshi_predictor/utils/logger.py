@@ -2,6 +2,8 @@ import logging
 import os
 import warnings
 import optuna
+import mlflow
+
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -19,7 +21,11 @@ def get_logger(name="KalshiPipeline"):
 
 
 def setup_mlflow(experiment_name: str = "kalshi-predictor") -> None:
-    import mlflow
+
+    """
+    Configure MLflow tracking URI and experiment name 
+    for logging hyperparameter optimization results.
+    """
 
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
     if tracking_uri:

@@ -13,6 +13,11 @@ log = get_logger()
 def bayesian_optimisation(
     X: pd.DataFrame, y: pd.Series, n_trials: int = 50, val_ratio: float = 0.2
 ) -> Tuple[dict, float]:
+    
+    """
+    Perform Bayesian hyperparameter optimization for a LightGBM regressor
+    """
+    
     split = int(len(X) * (1 - val_ratio))
     X_tr, y_tr = X.iloc[:split], y.iloc[:split]
     X_val, y_val = X.iloc[split:], y.iloc[split:]

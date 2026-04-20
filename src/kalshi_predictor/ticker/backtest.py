@@ -11,7 +11,6 @@ from ..utils import get_logger
 
 log = get_logger()
 
-
 def run_backtest(
     X: pd.DataFrame,
     y: pd.Series,
@@ -26,6 +25,11 @@ def run_backtest(
     log.info(
         f"Running walk-forward backtest (min_train={min_train}, refit_freq={refit_freq}) …"
     )
+    """
+    Run a walk-forward backtest on the provided feature matrix X and target y, 
+    using the given LightGBM parameters. The model is retrained every 'refit_freq' days,
+    starting after 'min_train' initial days. Returns a DataFrame of daily results 
+    """
 
     for i in tqdm(range(min_train, len(days)), desc="Backtesting", ncols=80):
         X_test = X.iloc[[i]]
@@ -67,7 +71,6 @@ def run_backtest(
             y_tr_arr = y_train.values.flatten()
             yhat_tr_arr = yhat_tr.flatten()
 
-            # Filter zero returns
             mask = y_tr_arr != 0
             if mask.sum() > 1:
                 r2_tr = float(r2_score(y_tr_arr[mask], yhat_tr_arr[mask]))
@@ -97,6 +100,11 @@ def performance_report(
     output_dir: str = "outputs",
     val_split_date=None,
 ) -> dict:
+    
+    """
+    Summarizes the performance with key metrics
+    """
+    
     pnl = results["pnl"]
     cum_pnl = pnl.cumsum()
     sharpe = (pnl.mean() / (pnl.std() + 1e-9)) * np.sqrt(252)
@@ -104,7 +112,6 @@ def performance_report(
     roll_max = cum_pnl.cummax()
     max_dd = (cum_pnl - roll_max).min()
 
-    # Filter flat days for valid metrics
     valid_mask = results["y_true"] != 0
     res_filt = results[valid_mask]
 

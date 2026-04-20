@@ -16,6 +16,11 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
     start_ts = int(start_dt.timestamp())
     end_ts = int(end_dt.timestamp())
 
+    """
+    Fetch and merge candlestick + trade data for a single ticker, 
+    returning a DataFrame indexed by date with features and target variable.
+    """
+
     parts = ticker.split("-")
     series_ticker = parts[0]
     log.info(f"Fetching candlesticks for {ticker} (series={series_ticker}) …")
@@ -69,7 +74,6 @@ def fetch_data(ticker: str, window_days: int = 365) -> pd.DataFrame:
     if all_trades:
         df_t = pd.DataFrame(all_trades)
 
-        # Strip time component natively during parsing
         df_t["ts"] = pd.to_datetime(df_t["created_time"], utc=True).dt.normalize()
 
         for col in ["count_fp", "yes_price_dollars", "no_price_dollars"]:
@@ -108,6 +112,11 @@ def build_features(
     f = pd.DataFrame(index=df.index)
     price = df["price"].replace(0, np.nan)
     ret = price.pct_change()
+
+    """
+    Build lagged features and rolling statistics from price and volume data,
+    returning feature matrix X and target variable y (next-day return).
+    """
 
     vol_total = df["vol_total"].replace(0, np.nan)
     vol_yes = df["vol_yes"]
