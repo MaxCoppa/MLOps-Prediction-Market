@@ -26,6 +26,7 @@ app = FastAPI(
     description="API for model Kalshi serie prediction",
 )
 
+
 @app.get("/", tags=["Welcome"])
 def show_welcome_page():
     return {
@@ -33,6 +34,7 @@ def show_welcome_page():
         "Model_name": "KXGDP ML",
         "Model_version": "0.3",
     }
+
 
 @app.get("/predict", tags=["Predict"])
 async def predict(
@@ -145,6 +147,7 @@ async def predict(
 
     prediction = float(model.predict(X)[0])
     return {"prediction": prediction}
+
 
 @app.get("/predict/pnl", tags=["Predict"])
 async def predict_pnl():

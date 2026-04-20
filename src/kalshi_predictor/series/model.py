@@ -14,7 +14,7 @@ def bayesian_optimisation(
     X: pd.DataFrame, y: pd.Series, n_trials: int = 50, val_ratio: float = 0.2
 ) -> Tuple[dict, float]:
     """
-    Perform Bayesian hyperparameter optimization for a LightGBM regressor 
+    Perform Bayesian hyperparameter optimization for a LightGBM regressor
     using Optuna with MLflow logging.
     """
     split = int(len(X) * (1 - val_ratio))

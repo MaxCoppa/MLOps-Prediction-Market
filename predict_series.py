@@ -27,14 +27,13 @@ def run_series_pipeline(
     refit_freq: int = 1,
     output_dir: str = "outputs",
 ) -> dict:
-    
     """
-    Main pipeline to run the full series prediction workflow: 
+    Main pipeline to run the full series prediction workflow:
     data fetching, feature engineering, hyperparameter optimization,
     backtesting, and performance reporting.
     Results are logged to MLflow and saved as CSV/JSON artefacts.
     """
-    
+
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     log.info(f"{'='*60}\n  Kalshi Series Pipeline — {series_ticker}\n{'='*60}")
 

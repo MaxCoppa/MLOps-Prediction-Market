@@ -32,7 +32,7 @@ def run_backtest(
         )
 
     model_opt = lgb.LGBMRegressor(**best_params)
-    model_def = lgb.LGBMRegressor()  
+    model_def = lgb.LGBMRegressor()
     model_trained = False
 
     results_opt, metrics_opt = [], []

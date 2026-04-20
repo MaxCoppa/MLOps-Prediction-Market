@@ -11,6 +11,7 @@ from ..utils import get_logger
 
 log = get_logger()
 
+
 def run_backtest(
     X: pd.DataFrame,
     y: pd.Series,
@@ -100,11 +101,10 @@ def performance_report(
     output_dir: str = "outputs",
     val_split_date=None,
 ) -> dict:
-    
     """
     Summarizes the performance with key metrics
     """
-    
+
     pnl = results["pnl"]
     cum_pnl = pnl.cumsum()
     sharpe = (pnl.mean() / (pnl.std() + 1e-9)) * np.sqrt(252)

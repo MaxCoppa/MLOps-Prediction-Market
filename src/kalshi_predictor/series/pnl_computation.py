@@ -14,7 +14,7 @@ def compute_yesterday_pnl(
     series_ticker: str, model, n_lags: int = 10, window_days: int = 40
 ) -> pd.DataFrame:
     """
-    Compute PnL for yesterday's predictions across all tickers in a series, 
+    Compute PnL for yesterday's predictions across all tickers in a series,
     using the provided model and features built from recent data.
     """
 
