@@ -39,7 +39,7 @@ It follows a production-style workflow inspired by the ENSAE reproducibility and
 
 ```text
 MLOps-Prediction-Market/
-├── app/
+├── .github/
 ├── src/
 │   └── kalshi_predictor/
 │       ├── __init__.py
@@ -47,7 +47,6 @@ MLOps-Prediction-Market/
 │       ├── ticker/
 │       └── utils/
 ├── predict_series.py
-├── predict_ticker.py
 ├── Dockerfile
 ├── pyproject.toml
 ├── requirements.txt
@@ -55,9 +54,7 @@ MLOps-Prediction-Market/
 ├── README.md
 ├── index.qmd
 ├── _quarto.yml
-├── styles.css
-├── mlflow.db
-└── _site/
+└── styles.css
 ````
 
 ### Main components
@@ -72,7 +69,6 @@ MLOps-Prediction-Market/
 * `app/`: FastAPI application for serving predictions
 * `index.qmd`, `_quarto.yml`, `styles.css`: Quarto website source
 * `Dockerfile`: containerization for deployment
-* `mlflow.db`: MLflow tracking database
 
 ## Pipeline overview
 
@@ -105,10 +101,10 @@ uv sync
 
 ## Running
 
-Run the series pipeline on a ticker such as `KXGDP`:
+Run the series pipeline on a ticker such as `KXCPI`:
 
 ```bash
-uv run python predict_series.py KXGDP
+uv run python predict_series.py KXCPI
 ```
 
 This pipeline:
@@ -146,7 +142,7 @@ For the series pipeline, MLflow logs:
 The experiment name can be set from the command line:
 
 ```bash
-uv run python predict_series.py KXGDP --experiment_name kalshi-series
+uv run python predict_series.py KXCPI --experiment_name kalshi-series
 ```
 
 Experiments were run on **SSPCloud MLflow** and have not been tested in other MLflow environments.
