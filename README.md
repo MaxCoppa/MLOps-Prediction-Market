@@ -117,14 +117,6 @@ This pipeline:
 * generates reports and output artifacts
 * logs parameters, metrics, datasets, and models with MLflow
 
-## Outputs
-
-Pipeline outputs are stored in the `outputs/` directory and may include:
-
-* optimized backtest results
-* default backtest results
-* JSON performance reports
-* MLflow artifacts and trained models
 
 ## MLflow experiment tracking
 
