@@ -247,3 +247,7 @@ The website provides:
 * extend the pipeline to other Kalshi series
 * compare LightGBM with alternative models
 
+
+### Authors 
+Maxime Coppa, Antoine Gilson, Marama Simoneau et Auguste Vautrin - ENSAE 2026
+
