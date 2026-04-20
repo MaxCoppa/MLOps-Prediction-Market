@@ -1,12 +1,6 @@
 [![ci](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/prod.yml/badge.svg)](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/prod.yml)
 [![train](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/train.yml/badge.svg)](https://github.com/MaxCoppa/MLOps-Prediction-Market/actions/workflows/train.yml)
 
-![LightGBM](https://img.shields.io/badge/Model-LightGBM-green)
-![Optuna](https://img.shields.io/badge/Tuning-Optuna-blue)
-![MLflow](https://img.shields.io/badge/Tracking-MLflow-purple)
-![FastAPI](https://img.shields.io/badge/API-FastAPI-009688)
-![Docker](https://img.shields.io/badge/Container-Docker-2496ED)
-![Quarto](https://img.shields.io/badge/Website-Quarto-39729E)
 
 # MLOps Prediction Market
 
